@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MonkeyPanel — Situations</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="panel.css">
+  <link rel="icon" href="https://monkeypanel.com/v1/assets/icons/mb_logo.48.teal.png" type="image/png">
+</head>
+<body>
+  <div id="mb-app">
+    <header id="mb-topbar">
+      <button type="button" id="mb-logo" title="Reload" aria-label="Reload" onclick="location.reload()">
+        <img class="logo-default" src="https://monkeypanel.com/v1/assets/icons/mb_logo.48.teal.png" alt="MB">
+        <img class="logo-hover" src="https://monkeypanel.com/v1/assets/icons/mb_logo.48.purple.png" alt="MB">
+      </button>
+      <div id="mb-title">MonkeyPanel <span>situations</span></div>
+      <a href="#" id="mb-tour-link" class="mb-tour-link">Prototype</a>
+    </header>
+
+    <div id="mb-body">
+      <aside id="mb-sidebar">
+        <nav id="mb-system-nav" aria-label="Situations"></nav>
+      </aside>
+
+      <main id="mb-main">
+        <div id="mb-main-hint">Select a surface from the left.</div>
+
+        <section class="mb-panel" data-panel="detector" hidden>
+          <h2>Situation Detector</h2>
+          <p class="lede">Assemble a Situation. Not a blank editor.</p>
+          <div class="compose">
+            <textarea placeholder="What’s the situation?"></textarea>
+            <div class="chips">
+              <span class="chip">text</span>
+              <span class="chip">audio</span>
+              <span class="chip">camera</span>
+              <span class="chip">location</span>
+              <span class="chip">mood</span>
+            </div>
+            <button class="primary">Publish as Situation</button>
+          </div>
+        </section>
+
+        <section class="mb-panel" data-panel="monitor">
+          <h2>Monitor</h2>
+          <div class="filters">
+            <button class="is-on">All</button>
+            <button>Doing now</button>
+            <button>Active</button>
+            <button>Waiting</button>
+          </div>
+          <div class="card">
+            <div class="card-title">Walking outside <span class="badge doing">Doing</span></div>
+            <div class="card-meta">32 min · near park · 1 match</div>
+          </div>
+          <div class="card">
+            <div class="card-title">Need milk and eggs <span class="badge">Active</span></div>
+            <div class="card-meta">grocery · budget $15 · 3 matches</div>
+          </div>
+          <div class="card">
+            <div class="card-title">Roof repair quote <span class="badge warn">Waiting</span></div>
+            <div class="card-meta">2 offers · conversation linked</div>
+          </div>
+
+          <h3>Trackers</h3>
+          <div class="card">
+            <div class="card-title">Daily walk ≥ 30 min <span class="badge match">on track</span></div>
+            <div class="card-meta">vs yesterday +4 min</div>
+          </div>
+          <div class="card">
+            <div class="card-title">Never again: that cafe <span class="badge warn">blacklist</span></div>
+            <div class="card-meta">SystemNote · locus</div>
+          </div>
+
+          <h3>Triggers</h3>
+          <div class="card">
+            <div class="card-title">No walk by 6 pm → propose Situation</div>
+            <div class="card-meta">armed · linked to daily walk</div>
+          </div>
+        </section>
+
+        <section class="mb-panel" data-panel="discover" hidden>
+          <h2>Discover</h2>
+          <p class="lede">Other Situations on the network.</p>
+          <div class="card">
+            <div class="card-title">Need a ride to the airport</div>
+            <div class="card-meta">2.1 km · matches your standing Offer</div>
+          </div>
+          <div class="card">
+            <div class="card-title">Looking for a plumber this week</div>
+            <div class="card-meta">neighborhood · 1 open Offer</div>
+          </div>
+        </section>
+
+        <section class="mb-panel" data-panel="situation" hidden>
+          <h2>Single Situation</h2>
+          <div class="views">
+            <button class="is-on">As Note</button>
+            <button>Semantic Graph</button>
+            <button>JSON</button>
+          </div>
+          <div class="card">
+            <div class="card-title">Walking outside</div>
+            <div class="card-meta">locus: park · duration: 32 min · mood: calm</div>
+          </div>
+          <p class="lede">Match rail, linked Conversation, and phase timeline live here.</p>
+        </section>
+
+        <section class="mb-panel" data-panel="trackers" hidden>
+          <h2>Trackers</h2>
+          <p class="lede">Dedicated screen. Template or blank. Not the default input.</p>
+          <div class="card"><div class="card-title">Price ceiling on a product page</div></div>
+          <div class="card"><div class="card-title">Keyword in headlines</div></div>
+          <div class="card"><div class="card-title">Weather at a locus</div></div>
+        </section>
+
+        <section class="mb-panel" data-panel="triggers" hidden>
+          <h2>Triggers</h2>
+          <p class="lede">Dedicated screen. Condition, action, payload.</p>
+          <div class="card"><div class="card-title">Propose Situation when threshold crossed</div></div>
+          <div class="card"><div class="card-title">Notify on headline keyword</div></div>
+        </section>
+
+        <section class="mb-panel" data-panel="templates" hidden>
+          <h2>Templates</h2>
+          <p class="lede">Copyable starters for Situations, Trackers, Triggers, Agreements, New Rules.</p>
+        </section>
+
+        <section class="mb-panel" data-panel="profile" hidden>
+          <h2>Profile</h2>
+          <p class="lede">Public and private profile fields.</p>
+        </section>
+
+        <section class="mb-panel" data-panel="rules" hidden>
+          <h2>New Rules</h2>
+          <p class="lede">“Never going there again” → blacklist. “Never pay more than…” → price constraint.</p>
+        </section>
+
+        <section class="mb-panel" data-panel="systemnotes" hidden>
+          <h2>System Notes</h2>
+          <p class="lede">Definitions. They do not run. Trackers and Triggers cite them.</p>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <script src="monkeypanel_tree.js"></script>
+  <script src="mb-nav.js"></script>
+  <script>
+    if (window.MBNav) window.MBNav.buildSidebar();
+  </script>
+</body>
+</html>
