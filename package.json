@@ -6,5 +6,8 @@
   "scripts": {
     "build": "echo 'not yet implemented'",
     "test": "echo 'not yet implemented'"
+  },
+  "dependencies": {
+    "notention9": "github:autonull/notention9"
   }
 }
