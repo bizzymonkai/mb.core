@@ -1,12 +1,42 @@
 # mb.core / core
 
-Thin application layer that maps MonkeyBusiness interaction primitives onto Notention Notes.
+Thin application layer on top of `@notention/core`.
 
-## Planned surface
+## Import
 
-- Primitive constructors / validators for the 12 interaction objects + referents.
-- SystemNote templates (ride, plumber, grocery, etc.).
-- Reply-graph helpers (`inReplyTo`, predecessor replacement, phase cache inference).
-- Matching entry point that only treats `Request target=network` as a network match root.
+`package.json` depends on `notention9` from GitHub. The package name inside that repo is `@notention/core` (`core/`).
 
-Depends on `@notention/core`. Do not modify the kernel.
+Once linked:
+
+```ts
+import {
+  DEFAULT_ONTOLOGY,
+  OntologyService,
+  findNode,
+  buildAttributeIndex,
+  collectOntologyKeys,
+} from '@notention/core';
+
+import { composeOntology } from './ontology/index.js';
+
+const nodes = composeOntology(DEFAULT_ONTOLOGY);
+const svc = OntologyService.createCustom(nodes);
+```
+
+## Class pattern
+
+Same as `notention9/core/src/ontology/domains.ts`:
+
+- `OntologyNode` with `id`, `label`, `attributes`, `requiredAttributes`, `extends`, `children`
+- `OntologyAttribute` with `type`, `operators.real` / `operators.imaginary`, optional `options` and `aliases`
+- Consumed by `OntologyService` (`createStandard` / `createCustom`, `getNode`, `getAttribute`, `getValidOperators`)
+
+MB classes live in `src/ontology/mb.domains.ts`. They are the 12 primitives. Templates and scenarios are not classes.
+
+## Layout
+
+```
+src/ontology/mb.domains.ts   Situation, Offer, Conversation, ... as OntologyNodes
+src/ontology/index.ts        composeOntology(host) for merging with DEFAULT_ONTOLOGY
+src/index.ts                 public exports
+```
