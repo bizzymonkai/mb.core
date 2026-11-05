@@ -2,7 +2,7 @@
 
 ## New Rule (self-monitoring constraint)
 
-A **New Rule** is a self-directed constraint that the Situation detector (or a dedicated capture) turns into a durable, always-on SystemNote or Profile fact.
+A **New Rule** is a self-directed constraint that the Situation detector (or a dedicated capture) turns into a durable SystemNote.
 
 Casual input → formal output:
 
@@ -10,23 +10,47 @@ Casual input → formal output:
 |--------------|---------------|--------|
 | “I’m never going there again” | Blacklist directive for that locus | Future Situations / Offers matching that location are flagged or suppressed |
 | “I’ll never pay more than $XX for YYY” | Price constraint on category YYY | Matching Offers above the ceiling are deprioritized or blocked |
-| “I walk outside every day” | Recurring Situation / habit goal | Doing Mode and Monitor track progress against the rule |
+| “I walk outside every day” | Recurring Situation / habit goal | Active Tracker measures progress; can Trigger a reminder or Situation |
 | “No negative self-talk on fitness” | Tone / language constraint on fitness Situations | Detector or editor surfaces a soft prompt when phrasing drifts |
 
-New Rules are first-class. They live as SystemNotes (templates that do not run but are consulted) or as Profile properties. They apply to every relevant Situation without being re-stated.
+New Rules live as SystemNotes. They do not run. They are consulted.
 
-## Always-on SystemNotes for self-monitoring
+## SystemNotes, Trackers, and Triggers
 
-SystemNotes can run as always-on background constraints for every Situation the person creates or is in.
+Three distinct things:
+
+| Object | What it is | Runs? | Role |
+|--------|------------|-------|------|
+| **SystemNote** | Signed, reusable description of a rule, goal, constraint, or reply path. Holds the definition. | No | Definition. Tracks (indexes) the internal Notes that fall under it. |
+| **Tracker** | Active monitor created from a SystemNote (or from a goal/rule). Watches Situations, Doing Mode, metrics. | Yes (observation) | Measurement. Reports progress against the SystemNote’s target. |
+| **Trigger** | Action or event that a Tracker can fire when a condition is met. | Yes (action) | Consequence. Can create a Situation, send a Message, propose a reminder, open a Conversation, etc. |
+
+Relationship:
+
+- Goals and rules are set as SystemNotes.
+- Each relevant SystemNote can have one or more active Trackers.
+- Each Tracker can also be a Trigger for another action or event.
+- Trackers are not SystemNotes.
+- SystemNotes track all internal Notes that match their scope (they hold the index or the citation set).
+
+Example:
+
+1. SystemNote: “Walk outside every day, ≥ 30 min, compare to yesterday.”
+2. Tracker: watches Doing Mode Situations tagged walk/outdoor; records duration; compares to prior day.
+3. Trigger (optional): if no walk Situation by 6 pm, propose a Situation or send a local reminder.
+
+The SystemNote remains the durable, non-running definition. The Tracker is the live measurement. The Trigger is the optional consequence.
+
+## Always-on self-monitoring
 
 Best self-interaction patterns:
 
-- **Baseline goals** — walking outside, distance, treadmill time, weight, reps. Each day’s Doing Situation is measured against yesterday or a rolling average. The SystemNote holds the metric, the target, and the comparison rule.
-- **Negative-self-talk reduction** — a SystemNote that watches language in fitness, work, or mood Situations and offers a rewrite or a pause. Not a block; a mirror.
-- **Never-again / never-more** — the blacklist and price-ceiling examples above. Consulted at match time and at compose time.
-- **Habit windows** — “walk before 9 am”, “gym Mon/Wed/Fri”. The SystemNote proposes or auto-instantiates the Situation when the window opens.
+- **Baseline goals** — walking outside, distance, treadmill time, weight, reps. Tracker measures each day’s Doing Situation against yesterday or a rolling average held in the SystemNote.
+- **Negative-self-talk reduction** — SystemNote holds the language constraint; Tracker watches fitness/mood Situations; Trigger offers a rewrite or pause (mirror, not a block).
+- **Never-again / never-more** — SystemNote holds the blacklist or price ceiling; Tracker (or matcher) consults it at compose time and match time; Trigger can flag or suppress.
+- **Habit windows** — SystemNote holds “walk before 9 am” or “gym Mon/Wed/Fri”; Tracker watches the window; Trigger proposes or auto-instantiates the Situation.
 
-These SystemNotes are local by default. They do not need to be published to affect the person’s own matching and editing. They can be published later if the person wants others to see the commitment.
+These SystemNotes are local by default. They do not need to be published to affect the person’s own matching, tracking, and editing.
 
 ## Agreement primitive — conditions and negotiation
 
@@ -56,14 +80,15 @@ Constraints are not only on Situations. They appear at every layer:
 | Situation (network) | same, published | Other peers’ Offers are scored against them |
 | Offer | price ceiling, availability window, rails accepted | Facts that Situations constrain against |
 | Agreement | signed terms, validDuring, conditions | Cited by later Engagements; optional |
-| SystemNote (always-on) | never-again locus, max price, daily walk, tone | Consulted at compose time and match time for the author |
+| SystemNote | never-again locus, max price, daily walk, tone | Definition. Tracked by SystemNote; measured by Tracker; may fire Trigger |
 | Profile | standing capabilities, preferred rails, habit windows | Used as default facts or soft constraints |
 
-A New Rule is simply a constraint that the person wants applied automatically. The detector or the editor can promote a spoken or typed sentence into a SystemNote or Profile property so it persists across Situations.
+A New Rule is a constraint the person wants applied automatically. The detector or the editor promotes a spoken or typed sentence into a SystemNote. Trackers and Triggers are then attached as needed.
 
 ## Prototype implications
 
 - Situation detector and editor should recognize New Rule phrasing and offer to save it as a SystemNote.
-- Multi-Situation Monitor and Doing Mode should show progress against active baseline-goal SystemNotes.
+- Multi-Situation Monitor and Doing Mode should show active Trackers and their progress against SystemNotes.
 - Matching should respect author-side SystemNotes (blacklist, price ceiling) before scoring Offers.
+- Triggers should be explicit and optional; the SystemNote itself never executes.
 - Agreement editor should make conditions visible as properties that can be negotiated via counter-offers.
