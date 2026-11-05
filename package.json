@@ -1,0 +1,10 @@
+{
+  "name": "mb.core",
+  "private": true,
+  "type": "module",
+  "description": "MonkeyBusiness network primitive core engine prototype",
+  "scripts": {
+    "build": "echo 'not yet implemented'",
+    "test": "echo 'not yet implemented'"
+  }
+}
