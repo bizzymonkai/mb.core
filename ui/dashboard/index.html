@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MonkeyPanel — Monitor</title>
+  <style>
+    :root {
+      --bg: #0f1115;
+      --surface: #1a1d24;
+      --surface-2: #242830;
+      --border: #2e333d;
+      --text: #e8eaed;
+      --muted: #9aa0a6;
+      --accent: #8ab4f8;
+      --accent-2: #81c995;
+      --warn: #fdd663;
+      --doing: #c58af9;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    header h1 { margin: 0; font-size: 1.15rem; font-weight: 600; }
+    header .sub { color: var(--muted); font-size: 0.85rem; }
+    .plus {
+      background: var(--accent);
+      color: #0f1115;
+      border: none;
+      border-radius: 999px;
+      width: 36px;
+      height: 36px;
+      font-size: 1.4rem;
+      cursor: pointer;
+    }
+    nav.tabs {
+      display: flex;
+      gap: 8px;
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--border);
+      overflow-x: auto;
+    }
+    nav.tabs button {
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 6px 14px;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+    nav.tabs button.active {
+      background: var(--accent);
+      color: #0f1115;
+      border-color: var(--accent);
+    }
+    main { padding: 16px 20px 80px; max-width: 720px; margin: 0 auto; }
+    section { margin-bottom: 28px; }
+    section h2 {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      margin: 0 0 10px;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-bottom: 10px;
+    }
+    .card .title { font-weight: 600; margin-bottom: 4px; }
+    .card .meta { color: var(--muted); font-size: 0.82rem; display: flex; gap: 12px; flex-wrap: wrap; }
+    .badge {
+      display: inline-block;
+      font-size: 0.7rem;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: var(--surface-2);
+      color: var(--muted);
+    }
+    .badge.doing { background: #2a2038; color: var(--doing); }
+    .badge.match { background: #1a2e22; color: var(--accent-2); }
+    .badge.warn { background: #2e2818; color: var(--warn); }
+    .row { display: flex; justify-content: space-between; align-items: center; }
+    footer.nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-around;
+      padding: 10px 0;
+    }
+    footer.nav a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.75rem;
+      text-align: center;
+    }
+    footer.nav a.active { color: var(--accent); }
+    .empty { color: var(--muted); font-size: 0.85rem; padding: 8px 0; }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>Monitor</h1>
+      <div class="sub">Situations, Doing Mode, Trackers, Triggers</div>
+    </div>
+    <button class="plus" title="New">+</button>
+  </header>
+
+  <nav class="tabs">
+    <button class="active" data-filter="all">All</button>
+    <button data-filter="doing">Doing now</button>
+    <button data-filter="active">Active</button>
+    <button data-filter="waiting">Waiting</button>
+    <button data-filter="completed">Completed</button>
+  </nav>
+
+  <main>
+    <section id="situations">
+      <h2>Situations</h2>
+      <div class="card" data-status="doing">
+        <div class="row">
+          <div class="title">Walking outside</div>
+          <span class="badge doing">Doing</span>
+        </div>
+        <div class="meta">
+          <span>32 min</span>
+          <span>near park</span>
+          <span class="badge match">1 match</span>
+        </div>
+      </div>
+      <div class="card" data-status="active">
+        <div class="row">
+          <div class="title">Need milk and eggs</div>
+          <span class="badge">Active</span>
+        </div>
+        <div class="meta">
+          <span>grocery</span>
+          <span>budget $15</span>
+          <span class="badge match">3 matches</span>
+        </div>
+      </div>
+      <div class="card" data-status="waiting">
+        <div class="row">
+          <div class="title">Roof repair quote</div>
+          <span class="badge warn">Waiting</span>
+        </div>
+        <div class="meta">
+          <span>2 offers</span>
+          <span>conversation linked</span>
+        </div>
+      </div>
+    </section>
+
+    <section id="trackers">
+      <h2>Trackers</h2>
+      <div class="card">
+        <div class="row">
+          <div class="title">Daily walk ≥ 30 min</div>
+          <span class="badge match">on track</span>
+        </div>
+        <div class="meta">
+          <span>vs yesterday: +4 min</span>
+          <span>internal</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="row">
+          <div class="title">Headline: “Pittsburgh weather”</div>
+          <span class="badge">watching</span>
+        </div>
+        <div class="meta">
+          <span>newswire</span>
+          <span>last: 12 min ago</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="row">
+          <div class="title">Never again: that cafe</div>
+          <span class="badge warn">blacklist</span>
+        </div>
+        <div class="meta">
+          <span>locus constraint</span>
+          <span>SystemNote</span>
+        </div>
+      </div>
+    </section>
+
+    <section id="triggers">
+      <h2>Triggers</h2>
+      <div class="card">
+        <div class="row">
+          <div class="title">No walk by 6 pm → propose Situation</div>
+          <span class="badge">armed</span>
+        </div>
+        <div class="meta">
+          <span>linked to daily walk Tracker</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="row">
+          <div class="title">Flag Offers > $12 for milk</div>
+          <span class="badge">armed</span>
+        </div>
+        <div class="meta">
+          <span>price ceiling</span>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="nav">
+    <a href="#">Detector</a>
+    <a href="#" class="active">Monitor</a>
+    <a href="#">Discover</a>
+    <a href="#">Profile</a>
+  </footer>
+
+  <script>
+    const buttons = document.querySelectorAll('nav.tabs button');
+    const cards = document.querySelectorAll('#situations .card');
+    buttons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        buttons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const filter = btn.dataset.filter;
+        cards.forEach(card => {
+          const status = card.dataset.status;
+          const show = filter === 'all' || status === filter || (filter === 'doing' && status === 'doing');
+          card.style.display = show ? '' : 'none';
+        });
+      });
+    });
+  </script>
+</body>
+</html>
