@@ -7,7 +7,7 @@ Absorbs the sophisticated under-the-hood of [notention9](https://github.com/auto
 ## Strategy
 
 - Do not rewrite Notention’s matching physics, property system, or transport layers.
-- Map the 12 MB primitives (Request, Offer, Conversation, Message, Agreement, Engagement, Event, Invoice, Payment, Receipt, Endorsement, Dispute) + referents (Peer, Profile, Relationship) + SystemNote templates onto Notention Notes.
+- Map the 12 MB primitives (Situation, Offer, Conversation, Message, Agreement, Engagement, Event, Invoice, Payment, Receipt, Endorsement, Dispute) + referents (Peer, Profile, Relationship) + SystemNote templates onto Notention Notes.
 - Local-first first; Nostr path second.
 - Agreement is an aim, not a gate. Payments are always accepted. Reputation is optional Endorsements, not a score.
 
