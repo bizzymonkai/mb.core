@@ -9,20 +9,9 @@
  * Imported commit is recorded in core/vendor/IMPORTED.md.
  */
 
-// Relative imports into the owned source tree.
-// Adjust if the vendor layout is later flattened.
-export {
-  OntologyService,
-  DEFAULT_ONTOLOGY,
-} from '../vendor/notention/ontology/ontologyService.js';
-
-export { DEFAULT_ONTOLOGY as DEFAULT_ONTOLOGY_TREE } from '../vendor/notention/ontology/ontology.default.js';
-
-export {
-  MatchEngine,
-  MatchingService,
-} from '../vendor/notention/matching/index.js';
-
+export { OntologyService } from '../vendor/notention/ontology/ontologyService.js';
+export { DEFAULT_ONTOLOGY } from '../vendor/notention/ontology/ontology.default.js';
+export { MatchEngine, MatchingService } from '../vendor/notention/matching/index.js';
 export {
   findNode,
   buildAttributeIndex,
@@ -36,7 +25,7 @@ import { composeOntology } from './ontology/index.js';
 import type { OntologyNode } from './ontology/mb.domains.js';
 
 /** One service over MB classes + imported Notention ontology. */
-export function createEngine(host: OntologyNode[] = DEFAULT_ONTOLOGY as OntologyNode[]) {
+export function createEngine(host: OntologyNode[] = DEFAULT_ONTOLOGY as unknown as OntologyNode[]) {
   const nodes = composeOntology(host);
   const ontology = OntologyService.createCustom(nodes);
   return { ontology, nodes };
