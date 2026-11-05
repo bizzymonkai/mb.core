@@ -7,3 +7,5 @@ export {
 } from './ontology/index.js';
 
 export type { OntologyNode } from './ontology/index.js';
+
+export { createEngine } from './engine.js';
