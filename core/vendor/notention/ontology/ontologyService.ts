@@ -1,0 +1,181 @@
+import type { OntologyNode, OntologyAttribute, PropertyType } from '../types/index.js';
+import { findNode, getCanonicalKey, buildAttributeIndex } from './ontologyCore.js';
+import {
+    buildWidgetMetadata,
+    getAttributesByOperator,
+    getEnumOptions,
+    getAttributesByType,
+    getValidOperators,
+    type WidgetType
+} from './widgets.js';
+import { UsageTracker, type SuggestedAttribute } from './statistics.js';
+import { FuzzyMatcher } from '../utils/matching.js';
+import { DEFAULT_ONTOLOGY } from './ontology.default.js';
+
+/**
+ * Widget metadata structure - used as return type for buildWidgetMetadata
+ */
+type WidgetMetadata = {
+    type: WidgetType;
+    icon?: string;
+    options?: string[];
+    operators: string[];
+};
+
+export type { SuggestedAttribute, WidgetType };
+export type { WidgetMetadata };
+
+/**
+ * OntologyService - Programmatic access to ontology metadata
+ *
+ * Enables UI generation, property validation, and semantic matching
+ * without hardcoding domain knowledge.
+ */
+export class OntologyService {
+    private ontology: OntologyNode[];
+    private attributeIndex: Map<string, OntologyAttribute>;
+
+    // Modular utilities
+    private usageTracker: UsageTracker;
+    private fuzzyMatcher: FuzzyMatcher;
+
+    constructor(ontology: OntologyNode[]) {
+        this.ontology = ontology;
+        this.attributeIndex = buildAttributeIndex(this.ontology);
+        this.usageTracker = new UsageTracker(this.ontology, this.attributeIndex);
+        this.fuzzyMatcher = new FuzzyMatcher();
+    }
+
+    /**
+     * Create a standard ontology service with default ontology
+     */
+    static createStandard(): OntologyService {
+        return new OntologyService(DEFAULT_ONTOLOGY);
+    }
+
+    /**
+     * Create an ontology service with custom ontology
+     */
+    static createCustom(ontology: OntologyNode[]): OntologyService {
+        return new OntologyService(ontology);
+    }
+
+    /**
+     * Get widget metadata for an attribute
+     */
+    getWidgetMetadata(attributeKey: string): WidgetMetadata | null {
+        const attr = this.attributeIndex.get(attributeKey);
+        if (!attr) return null;
+        return buildWidgetMetadata(attr);
+    }
+
+    /**
+     * Get all attributes that support a specific operator
+     */
+    getAttributesByOperator(operator: string): Array<{ key: string; attribute: OntologyAttribute }> {
+        return getAttributesByOperator(this.attributeIndex, operator);
+    }
+
+    /**
+     * Get enum options for an attribute
+     */
+    getEnumOptions(attributeKey: string): string[] | null {
+        return getEnumOptions(this.attributeIndex, attributeKey);
+    }
+
+    /**
+     * Get all attributes of a specific type
+     */
+    getAttributesByType(type: string): Map<string, OntologyAttribute> {
+        return getAttributesByType(this.attributeIndex, type);
+    }
+
+    /**
+     * Fuzzy match attribute keys
+     */
+    getFuzzyMatches(input: string, limit: number = 5): string[] {
+        return this.fuzzyMatcher.match(input, this.attributeIndex, limit);
+    }
+
+    /**
+     * Get all attribute keys
+     */
+    getAllAttributeKeys(): string[] {
+        return Array.from(this.attributeIndex.keys());
+    }
+
+    /**
+     * Get attribute definition
+     */
+    getAttribute(key: string): OntologyAttribute | null {
+        return this.attributeIndex.get(key) || null;
+    }
+
+    /**
+     * Check if an attribute exists
+     */
+    hasAttribute(key: string): boolean {
+        return this.attributeIndex.has(key);
+    }
+
+    /**
+     * Get operators valid for an attribute
+     */
+    getValidOperators(attributeKey: string, type: 'real' | 'imaginary' | 'all' = 'all'): string[] {
+        return getValidOperators(this.attributeIndex, attributeKey, type);
+    }
+
+    /**
+     * Get all nodes in ontology
+     */
+    getAllNodes(): OntologyNode[] {
+        return this.ontology;
+    }
+
+    /**
+     * Find node by ID
+     */
+    getNode(nodeId: string): OntologyNode | null {
+        return findNode(this.ontology, nodeId);
+    }
+
+    /**
+     * Clear all caches when ontology changes
+     */
+    clearCaches(): void {
+        this.fuzzyMatcher.clear();
+    }
+
+    /**
+     * Record usage of property keys to track frequency and co-occurrence
+     */
+    recordUsage(properties: Array<{ key: string; values?: unknown[] }>): void {
+        this.usageTracker.record(properties);
+    }
+
+    /**
+     * Get suggested attributes based on usage frequency
+     */
+    getSuggestedAttributes(minFrequency: number = 3): SuggestedAttribute[] {
+        return this.usageTracker.getSuggestions(this.ontology, this.attributeIndex, minFrequency);
+    }
+
+    /**
+     * Get contextual suggestions based on co-occurrence
+     */
+    getContextualSuggestions(existingKeys: string[], limit: number = 5): SuggestedAttribute[] {
+        return this.usageTracker.getContextualSuggestions(
+            existingKeys,
+            this.ontology,
+            this.attributeIndex,
+            limit
+        );
+    }
+
+    /**
+     * Get graph data for visualization
+     */
+    getGraphData() {
+        return this.usageTracker.getGraphData();
+    }
+}
