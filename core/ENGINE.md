@@ -1,59 +1,67 @@
-# Wrapping the Notention engine
+# MB core is the engine
 
-`core/src/` currently holds the MB ontology overlay only. The engine is `@notention/core`. Do not reimplement it.
+MB.core is a modified Notention core. It is autonomous. It does not call Notention as a service, an API, or a remote package at runtime.
 
-## Already present
+Linking `@notention/core` is only a temporary way to interlink source while testing. It is not the architecture.
 
-- `src/ontology/mb.domains.ts` — 12 primitives as `OntologyNode`s
-- `src/ontology/index.ts` — `composeOntology(host)`
-- `package.json` — `notention9` from GitHub
+## What this is not
 
-## Link the package (blocker)
+- Not a wrapper that imports `@notention/core` and forwards calls.
+- Not a parasite that requires Notention to be installed or running.
+- Not a webservice client.
+- MatchEngine, OntologyService, Note constructors, storage, and signing live here. Callers use MB.core.
 
-notention9 is a monorepo. The import name is `@notention/core` (`core/`). A root GitHub dependency does not expose that name.
+## What this is
 
-Practical options:
+A fork-by-import:
 
-1. Clone notention9 beside mb.core and add a file dependency or workspace entry pointing at `notention9/core`.
-2. Or publish/link `@notention/core` and depend on that.
+1. Copy the Notention core source into this repo once.
+2. MB modifications (Situation class, constructors, SystemNote, Tracker, Trigger) live beside and on top of that source.
+3. An updater can re-import upstream files when we choose, so we can absorb later Notention work without living on their package.
 
-Until this is done, `import { … } from '@notention/core'` will not resolve.
-
-## What the wrapper must call (do not rewrite)
-
-| Concern | Notention export | MB use |
-|---------|------------------|--------|
-| Classes | `OntologyService`, `DEFAULT_ONTOLOGY` | `createCustom(composeOntology(DEFAULT_ONTOLOGY))` |
-| Notes | `Note`, `Property`, notes helpers | Situation/Offer/etc. are Notes with a class id |
-| Extraction | extraction pipeline / property extractor | Situation detector text → properties |
-| Matching | `MatchEngine`, `MatchingService`, `PropertyIndex` | Situation constraints vs Offer facts |
-| Storage | storage adapters | local-first Note store |
-| Signing / id | protocol helpers (CBOR, NoteID, sign/verify) | publish and cite |
-
-## Thin MB files still needed
+## Layout
 
 ```
-src/engine.ts            construct OntologyService + MatchEngine once
-src/primitives.ts        Situation/Offer/Agreement constructors → Note
-src/systemNote.ts        SystemNote as a Note that does not run
-src/tracker.ts           Tracker cites a SystemNote; observes
-src/trigger.ts           Trigger cites a Tracker; acts via ordinary primitives
+core/
+  vendor/notention/          imported source from notention9/core/src
+  src/
+    ontology/mb.domains.ts   MB classes (Situation, Offer, …)
+    engine.ts                constructs OntologyService + MatchEngine from local source
+    primitives.ts            Situation/Offer/Agreement → Note
+    systemNote.ts
+    tracker.ts
+    trigger.ts
+  scripts/
+    import-notention.ts      one-shot / updater: pull core/src from upstream into vendor/
 ```
 
-Each constructor sets `types` / class id from `mb.domains.ts` and properties in Notention’s `Property` shape. Matching and storage stay in Notention.
+At runtime everything resolves inside this repo. No `import from '@notention/core'`.
 
-## Not in the wrapper
+## Updater
 
-- MatchEngine internals
-- Property parser / operators
-- CBOR / signing
-- Transport
-- Simulator scenarios (those stay in `simulator/` and call the engine)
+`scripts/import-notention.ts` (or a shell equivalent):
+
+- Reads a pinned commit or the default branch of autonull/notention9.
+- Copies `core/src/**` into `core/vendor/notention/`.
+- Does not overwrite `core/src/` (MB modifications).
+- Records the imported commit in `core/vendor/IMPORTED.md`.
+
+Run it when we want to absorb upstream changes. Not on every build. Not as a dependency.
+
+## Call path
+
+```
+UI / simulator
+    → mb.core (engine.ts, primitives)
+        → local MatchEngine, OntologyService, Note, storage
+            (source that originated in Notention, now owned here)
+```
+
+There is no Notention process to call.
 
 ## Order
 
-1. Link `@notention/core`.
-2. `engine.ts` — one OntologyService, one MatchEngine.
-3. Primitive constructors.
-4. SystemNote, then Tracker and Trigger on top.
-5. Point the Situation detector and Monitor at those constructors.
+1. Run the importer once; commit `vendor/notention/`.
+2. Point `engine.ts` at the local vendor source.
+3. Add primitive constructors that emit Notes using the local types.
+4. Drop the GitHub package dependency once the import is verified.
