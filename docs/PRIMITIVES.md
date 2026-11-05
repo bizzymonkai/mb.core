@@ -6,9 +6,9 @@ Twelve interaction primitives. Three referent objects. One template object (Syst
 
 | # | Primitive | Match role | Notes |
 |---|-----------|------------|-------|
-| 1 | Request | constraint root | `target=network` (situation) or `target=identity` |
+| 1 | Situation | constraint root | Default surface name. `target=network` for discoverable situations; `target=identity` for directed. Formerly called Request. |
 | 2 | Offer | fact root | `role=listing` or `role=counter` (counter only after an Offer) |
-| 3 | Conversation | channel | membership via signed joins |
+| 3 | Conversation | channel | membership via signed joins; linked to Situations |
 | 4 | Message | channel atom | may attach any primitive; `intent=endorsement_request` reserved |
 | 5 | Agreement | attestation | aim of negotiation, not a gate |
 | 6 | Engagement | transition | phase is a cache |
