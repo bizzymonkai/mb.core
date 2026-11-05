@@ -19,6 +19,13 @@ export {
   getCanonicalKey,
 } from '../vendor/notention/ontology/ontologyCore.js';
 
+export {
+  getFrictionCounts,
+  getFrictionSignals,
+  recordFriction,
+  generateFrictionDigest,
+} from '../vendor/notention/telemetry/journal.js';
+
 import { OntologyService } from '../vendor/notention/ontology/ontologyService.js';
 import { DEFAULT_ONTOLOGY } from '../vendor/notention/ontology/ontology.default.js';
 import { composeOntology } from './ontology/index.js';
