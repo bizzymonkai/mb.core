@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MonkeyPanel — Prototype</title>
+  <style>
+    :root {
+      --bg: #0f1115;
+      --surface: #1a1d24;
+      --border: #2e333d;
+      --text: #e8eaed;
+      --muted: #9aa0a6;
+      --accent: #8ab4f8;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    header {
+      padding: 32px 24px 16px;
+      max-width: 640px;
+      margin: 0 auto;
+    }
+    header h1 { margin: 0 0 6px; font-size: 1.6rem; }
+    header p { margin: 0; color: var(--muted); }
+    main { max-width: 640px; margin: 0 auto; padding: 8px 24px 48px; }
+    a.card {
+      display: block;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 18px;
+      margin-bottom: 12px;
+      text-decoration: none;
+      color: var(--text);
+    }
+    a.card:hover { border-color: var(--accent); }
+    a.card .title { font-weight: 600; margin-bottom: 4px; }
+    a.card .desc { color: var(--muted); font-size: 0.88rem; }
+    .soon { opacity: 0.5; pointer-events: none; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>MonkeyPanel prototype</h1>
+    <p>Static demos. No build step. Served from monkeypanel.com/prototype</p>
+  </header>
+  <main>
+    <a class="card" href="../dashboard/">
+      <div class="title">Monitor</div>
+      <div class="desc">Multi-Situation Monitor — Doing Mode, Trackers, Triggers</div>
+    </a>
+    <a class="card soon">
+      <div class="title">Situation Detector</div>
+      <div class="desc">Coming next — multimodal compose</div>
+    </a>
+    <a class="card soon">
+      <div class="title">Single Situation</div>
+      <div class="desc">Coming next — Note / Semantic Graph / JSON</div>
+    </a>
+    <a class="card soon">
+      <div class="title">Tracker / Trigger</div>
+      <div class="desc">Coming next — dedicated template screens</div>
+    </a>
+  </main>
+</body>
+</html>
