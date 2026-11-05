@@ -5,9 +5,12 @@
   "description": "MonkeyBusiness network primitive core engine prototype",
   "scripts": {
     "build": "echo 'not yet implemented'",
-    "test": "echo 'not yet implemented'"
+    "test": "vitest run"
   },
   "dependencies": {
     "notention9": "github:autonull/notention9"
+  },
+  "devDependencies": {
+    "vitest": "^2.1.0"
   }
 }
