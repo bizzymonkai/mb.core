@@ -8,7 +8,13 @@ export {
 
 export type { OntologyNode } from './ontology/index.js';
 
-export { createEngine } from './engine.js';
+export {
+  createEngine,
+  getFrictionCounts,
+  getFrictionSignals,
+  recordFriction,
+  generateFrictionDigest,
+} from './engine.js';
 
 export {
   createPrimitive,
