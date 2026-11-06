@@ -10,7 +10,8 @@ This file is the specification. Files in [docs/](docs/) are retired archives. Do
 
 - Do not rewrite Notention’s matching physics, property system, or transport.
 - Map MB primitives onto Notention Notes. Class id is a tag `class:<id>` and a property `class is <id>`.
-- Local-first first. Nostr-shaped relay second. Mesh and direct bind later.
+- Local-first first. A Nostr relay and an IPFS node are bound services of the MB node. Mesh later.
+- No new cryptography. Identity, keygen, accounts, groups, subscriptions, encryption, and transport are Nostr. Content addressing is IPFS. MB does not define a key scheme.
 - Agreement is an aim, not a gate. Payments are always accepted. Reputation is optional Endorsements, not a score.
 - No product system, auction system, event system, media system, or social system. Those are properties and views. Assets are signed objects and a file view, not a media system.
 - No account server. No sole indexer. No global trending rank. No central ban policy.
@@ -123,38 +124,69 @@ Add, when needed: optional attributes on Peer, Place, Thing; `kind` on Offer/Sit
 
 ---
 
-## Identity and namespace
+## Identity, keys, and transport
 
-No account server.
+No new cryptography. One developer does not ship a key scheme.
 
-| Term | Meaning |
-|------|---------|
-| Peer | Network endpoint. Address can change. |
-| Seed | BIP39 mnemonic plus optional passphrase. Stays on the point of contact. |
-| Identity | BIP32 master key of the tree grown from that seed. Root. |
-| Account | Child key derived from the identity. Signs for itself. |
-| Username | Display name bound 1:1 to one pubkey. Like a DNS record. Signed claim. No roles granted. |
-| Person | Child of identity. |
-| Company | Child of identity. Same username rules as a person. |
-| Place | Derived network object. Shared ontological white pages index of loci. Not a child key. Has an assigned semantic tag, so it can be followed as a topic. |
-| Group | Associated identity. Own key. Rotates on every membership change. |
+Identity, keygen, accounts, groups, subscriptions, encryption, and event transport are [Nostr](https://github.com/nostr-protocol/nips). Content addressing is IPFS (Kubo). MB maps primitives onto Nostr events. It does not define a signature, a curve, a KDF, or a group key.
 
-Same mnemonic and passphrase restore the same main key on any point of contact. Person and company are children in that tree. A group name is a username on the group key. A Place has a name in the index and a semantic tag. It is not a username on a key.
+### Bindings
 
-### Follow
+| Piece | Binding |
+|-------|---------|
+| Identity | One secp256k1 keypair. Public key `npub`. Secret `nsec`. NIP-01, NIP-19. |
+| Keygen | A Nostr library (`nostr-tools` or equivalent) `generateSecretKey`. Not a seed tree. |
+| Account | Another keypair the person holds, or a NIP-46 remote signer. Not a child key. |
+| Follow | NIP-02 kind 3 contact list, plus a live NIP-01 `REQ`. |
+| Subscription | A NIP-01 filter: `authors`, `kinds`, `#e`, `#p`, `#t`, `since`, `until`. |
+| Group | NIP-29 relay-based group. The bound relay enforces it. |
+| Encryption | NIP-44. Not NIP-04. |
+| Username | Kind 0 `name`, optionally NIP-05 `name@domain`. |
+| Delete | NIP-09. Display hides. Relays may keep the event. |
+| Expiry | NIP-40 `expiration` tag. |
+| Wire format | NIP-01 event. `id` is sha256 of the serialized event. `sig` is BIP-340 Schnorr. |
 
-Nostr-shaped subscriptions. A follow is a filter, not a platform edge.
+NIP-06 (mnemonic derivation) is listed unrecommended by the NIPs index. Do not use it. Restore is paste the `nsec`, or a NIP-46 bunker that already holds it.
 
-| Follow | Filter | Example |
-|--------|--------|---------|
-| Key | author pubkey | an identity, account, person, company, or group |
-| Semantic tag | tag | a Place, a topic, a class, any other tag |
+### Dropped
 
-Any key can be followed. A username resolves to a key first (known, then resolver); the subscription is to that pubkey. Following the identity does not follow its child accounts. Each key is its own author filter.
+Earlier drafts specified these. They are out. Each one was a cryptographic system this project will not write.
 
-Any semantic tag can be followed the same way a Nostr client follows a topic: subscribe to events carrying that tag. A Place is a topic. It has an assigned semantic tag. Following a Place is a subscription to that tag, not to a key. Notes about the Place carry the tag. The client asks relays for events with it.
+| Dropped | Replaced by |
+|---------|-------------|
+| BIP39 seed and BIP32 master key | One `nsec` from a Nostr library |
+| Account, person, company as child keys | A separate keypair, or a NIP-46 signer. Person and company are kind 0 labels. |
+| Group key that rotates on every membership change | NIP-29 membership list on the relay |
+| Custom namespace resolver and 14-day name claim | Kind 0 name, optional NIP-05. A collision is a display problem. |
+| Custom signature, hash, and relay wire format | NIP-01 |
+| Custom asset key wrap | NIP-44 to the owner pubkey |
 
-Citing a Place (an identity signs that it is at that locus) is not the same as following it.
+### Identity
+
+An identity is an `npub`. The `nsec` signs events and decrypts NIP-44 payloads. Whoever holds the `nsec` is that identity.
+
+Keygen is a library call, done once, on first launch or when the person asks for another key. MB does not implement it.
+
+Multi-device: the same `nsec` on each device, or one device holds it and the others request signatures over NIP-46. There is no seed that restores a tree.
+
+### Accounts
+
+An account is a second keypair, created with the same library call, or a NIP-46 bunker the person already has. MB stores the `nsec` locally or stores the bunker connection. It does not derive the account from the identity.
+
+Following an identity does not follow its accounts. The person adds those pubkeys to the kind 3 list if they want that.
+
+Person and company are labels on a keypair (kind 0 `name`, `about`). They are not derived keys. A Place is not a key. It is a `t` tag.
+
+### Follow and subscribe
+
+| Follow | Filter |
+|--------|--------|
+| Key | `authors: [pubkey]` |
+| Topic, Place, class | `#t: [tag]` |
+| what3words | one `#t`: `what3words:word1.word2.word3` |
+| Group | NIP-29 `h` tag, on the relay that hosts the group |
+
+A follow is a kind 3 entry. A subscription is the `REQ` that filter opens. They are not platform edges.
 
 ### what3words
 
@@ -174,107 +206,55 @@ All three words have to be present. They are one tag, not three.
 | No cross-language alias | Another language's words for the same square are a different address. |
 | `near` stays on `locus` | Radius needs coordinates. Word similarity cannot find the next square. |
 
-A what3words tag is a topic filter, same as any other semantic tag. Following it subscribes to events that carry that one tag. It may sit on a Situation or an Offer. Invalid input (not exactly three words) is not stored.
+A what3words tag is a topic filter, same as any other `t` tag. Following it is a `REQ` for events that carry that one tag. It may sit on a Situation or an Offer. Invalid input (not exactly three words) is not stored.
 
 ### Known
 
-Known is not a set of identities. It is namespace entries for already established real-world names, plus the shared Place index.
+Known is not a set of derived identities. It is kind 0 names and NIP-05 identifiers the client has already seen, plus Place tags.
 
 | Kind | What it is |
 |------|------------|
-| Namespace entry | A real-world name (place, person, company) already on record. No signing key required. MB cites it. Does not invent it. |
-| Place index | Shared white pages of loci. |
-| Association | An identity later signs that it is, acts for, or is at that name or Place. Until then the entry is a public referent, not a child of any identity. |
+| Kind 0 | `name`, `about`, `picture` for an `npub`. Replaceable. |
+| NIP-05 | Optional `name@domain` checked against that domain. DNS, not an MB resolver. |
+| Place tag | A `t` tag. Shared by use, not by a key. |
 
-White pages are local-area. Resolve from known before crawling. A real-world name is not rotated when a key changes. Only the association is. The Place index is not rotated.
-
-### Resolver
-
-A network service, not a central authority.
-
-- Crawls for the same username on mismatched pubkeys, and for UUID collisions.
-- Informs both pubkeys. A collision is a network Situation.
-- Suggests the newer claimant pick a different name.
-- Only disputed names need resolution. Undisputed claims stand.
-- Anyone may claim a name. The resolver makes collisions inconvenient. It does not forbid them.
-- Spoofing is assumed. Signing requires the private key bound to that pubkey. A keyless namespace entry cannot be spoofed as an identity; it can only be claimed later by association.
-
-### Newer claim on an existing name
-
-Locked. Revise if a better rule appears. Allowed only as a visible challenge, and only against a public-person entry that has no living association.
-
-| Case | Result |
-|------|--------|
-| Known real-world entry, no living association | Newer key may claim. Signed association. Resolver records it. |
-| Public person, already associated | Challenge. Both keys informed. Name stays until resolved. |
-| Private person, company, or group with a living key | Refused by convention. Flag and suggest another name. |
-| Associated, key dead or retracted | Newer key may claim. Old association is a tombstone. |
-
-Public person: a namespace entry published as a real-world name and not bound to a still-signing key. An actively signed private username is not open. A Place is not claimed as a key. It is cited from the index and followed by its semantic tag.
-
-Challenge, not seizure:
-
-1. Newer key signs a claim citing the name and the current pubkey.
-2. Resolver informs both. The claim is a network Situation.
-3. Current holder has 14 days to re-assert.
-4. Re-assert: newer claim fails. Pick another name.
-5. Silence: association moves. Old association is a tombstone. Changelog records the handoff.
-
-### Restore and rotation
-
-- Same key, new address: username stands. No re-registration.
-- New key: namespace records rotate. Old key signs the handoff, or the name is re-claimed and may collide.
-- Child keys (account, company, person) are re-derived from the restored master.
-
-### Publish and subscribe
-
-Nostr-shaped relay is the default. One filter language.
-
-| Target | Gathers |
-|--------|---------|
-| identity | All accounts, groups, companies, and persons associated with this identity, plus Places it has cited. Wide. |
-| account / company / person | That child key only. |
-| place | The shared Place index entry. Not a key. |
-| network | class, locus, topic, author — any subset. Loose. |
-
-A known entry with no association is a referent, not a target identity.
-
-Matching is loose. High confidence means many semantic parts. Low means one or a few. Conceptual adjacency: `bar` also considers `pub` and `saloon` (ontology aliases and neighbors, not a hardcoded list). Ranking is a relative sort, not a cardinal score.
-
-### Replication, expiry, retract
-
-Any peer may keep any Note. No dedicated indexer. Persistence is incentivized, not guaranteed.
-
-| Record | Keep |
-|--------|------|
-| Settlement / monetary | Content-addressable, 2 years. |
-| Other | Default 120 days. Author may set shorter or longer. |
-| Disappearing | TTL on publish. Minimum 31 seconds. Revokes itself. |
-
-Expiry is a property. Honest peers honor it. Relays may ignore it. Each peer sets its own politeness. Throttled floods may be banned by the peer who chooses to. Spoofed messages get flagged. Spam lists may be shared.
-
-A newer Note replaces an older one, references it if still alive, absorbs it, and carries a changelog so reversion is possible.
-
-Retract: a signed Note citing the target id, from the same key. Display hides it. The ledger keeps it as metadata. Tombstones live in a graveyard so content can be matched to a resurrected object. Peers may ask anyone still relaying it to retire it.
+White pages are the client's cache of kind 0 and Place tags. There is no MB resolver service.
 
 ### Groups
 
-Own identity. New configuration of member ids → new keypair, encrypted to current members. First member who accepts a new member triggers rotation.
+NIP-29. A group is an id string plus the relay that enforces rules for that id. The bound relay is that relay for groups created on this node.
 
-- Default: every member has full privilege.
-- Optional single admin. Admin may only add, remove, rename, or purge group messages.
-- Those permissions exist only at the group. They do not extend to other Notes.
+- Metadata, admins, and members are addressable events signed by the relay (kinds 39000–39003).
+- User events carry an `h` tag with the group id.
+- Private means the relay requires AUTH to read. Closed means join is approved. MB does not add a group encryption key.
+- A group does not move to another relay unless that relay also hosts the id. That limit is the NIP. Accept it.
+- Permissions are the relay's NIP-29 policy. Do not add a second permission system, and do not extend group roles to other events.
+
+Group chat is a Conversation whose events carry `h`. Group payment and group contract cite the member pubkeys from the relay's member list. They do not cite a group key.
+
+### Publish
+
+An MB primitive is a Nostr event signed by the author's `nsec`. Class is a tag `class:<id>` and a field in the content JSON.
+
+| Primitive | Kind | Notes |
+|-----------|------|-------|
+| Situation, Offer, Message, Agreement, Engagement, Event, Invoice, Payment, Receipt, Endorsement, Dispute | An application kind, or kind 1 with a `class` tag | A kind is a label. It is not new crypto. Pick existing NIP kinds when one fits. |
+| Conversation in a group | Any content kind plus `h` | NIP-29 |
+| Direct message | NIP-17 if the library has it, else a NIP-44 payload | Not NIP-04 |
+| Asset index | Addressable event citing the IPFS CID | Ciphertext is NIP-44 to the owner pubkey |
+
+Exact kind numbers can wait. One table, once, when the first event is sent.
 
 ### Fetch then match
 
-1. Build a filter from the Situation (class, locus, topic, author, window). Feed filters and Tracker filters are separate.
-2. Ask relays or peers.
-3. Run MatchEngine locally.
+1. Build a NIP-01 filter from the Situation (`authors`, `kinds`, `#t` for class, locus, topic, `since`). Feed filters and Tracker filters are separate.
+2. `REQ` the bound relay, and any other relay the person listed.
+3. Run MatchEngine locally on the events that came back.
 4. Sort relatively.
 
-Every filter is a reason to run the matcher under that filter’s rules. A broad Situation is a game: it can match; blank spam is ignored. Empty is valid. Keep listening. The Note persists. The user widens; the client does not auto-widen.
+Every filter is a reason to run the matcher under that filter's rules. A broad Situation is a game: it can match; blank spam is ignored. Empty is valid. Keep listening. The event persists. The user widens; the client does not auto-widen.
 
-Not specified here: signature algorithm, hash, relay wire format.
+Replication is whatever relays the person publishes to. No sole indexer. NIP-40 for expiry. NIP-09 for retract.
 
 ---
 
@@ -442,6 +422,41 @@ Early notes described a temporary `notention9` GitHub package dependency. That l
 ---
 
 
+## MB node
+
+One process. Two bound services. Neither is written by MB.
+
+A new install creates both. Each can be configured and toggled on and off without the other.
+
+| Service | What is bound | On install |
+|---------|---------------|------------|
+| Nostr relay | A Nostr relay implementation. strfry, nostr-rs-relay, khatru, or equivalent. Speaks NIP-01. Hosts NIP-29 groups for this node. | Created, running, loopback |
+| IPFS node | Kubo. The official binary from the IPFS distribution, imported into the node payload. Not a reimplementation. | `ipfs init` into the node path, daemon running, loopback API |
+
+### Install
+
+1. Install the MB node.
+2. Import the relay binary or package into the node. Start it. Its data dir is the node's.
+3. Download the Kubo payload for this OS from the IPFS distribution. Import it. `ipfs init`. Start the daemon.
+4. Keygen is separate and lazy. First launch calls the Nostr library for an `nsec`, or the person pastes one. The node does not derive it.
+
+### Toggles
+
+| Action | Relay | IPFS |
+|--------|-------|------|
+| Stop relay | Publish and subscribe pause. Matching still runs on events already stored. | Unaffected |
+| Stop IPFS | Unaffected | Add, pin, and fetch pause. Local files remain. |
+| Start either | That service only | That service only |
+| Configure | Port, NIP-29 on or off, extra relays to query | API port, gateway port, pinning |
+
+The UI shows two switches. They are independent. Stopping one does not stop the other, and does not stop the MB process.
+
+### What the node is not
+
+Not an account server. Not the only relay a client may use. A person may add public relays. The bound relay is the default, and the NIP-29 host for groups created here. The IPFS node is this device's node. MB does not run a cluster.
+
+---
+
 ## Assets
 
 Signed media objects. Local-first files that become network-available when an identity or an account key encrypts, signs, and indexes them. Like iCloud with no account server and no storage bill to MB. The peer pays in disk and in the IPFS node they choose to run.
@@ -479,12 +494,14 @@ A local-only file is not an Asset yet. Adding it to account assets is the act th
 
 ### Keys
 
+Encryption is NIP-44 to the owner pubkey. No custom wrap.
+
 | Owner | Who can decrypt |
 |-------|-----------------|
-| Identity | Any device with the seed. All child keys can be derived; the identity wraps the content key. |
-| Account | Devices with the seed (they derive the account) or that account key alone. |
+| Identity `nsec` | Any device that holds that `nsec`, or a NIP-46 bunker that holds it. |
+| Account `nsec` | Devices that hold that account key, or its bunker. |
 
-Moving an Asset from an account to the identity, or the reverse, re-wraps the content key and publishes a new index Note. The CID can stay if the ciphertext key does not change; if it does, a new CID is pinned and sync starts.
+Moving an Asset to another key re-encrypts with NIP-44 to the new pubkey and publishes a new index event. A new CID is pinned. Sync starts.
 
 ### IPFS node
 
@@ -607,4 +624,4 @@ Social is concurrent with the protocol (same signed Notes), orthogonal to matchi
 
 ## Still thin
 
-Object model and the five network bases are specified. Assets are specified as signed objects plus a file view; the IPFS node lifecycle and multi-device sync are not code yet. Still unspecified as code: the Situation→filter builder, the retract Note constructor, the 14-day claim window, replication policy beyond the table above, group key rotation, and the Asset index Note constructor. Crypto, hash, and relay wire format stay on the Nostr-shaped substrate already in the vendor tree.
+Identity, keygen, groups, subscriptions, encryption, and transport are Nostr. Content addressing is Kubo. Neither service is written here. Still unspecified as code: binding a relay binary into the node, importing the Kubo payload on install, the Situation→NIP-01 filter builder, the application kind table, and the Asset index event. No BIP32 tree, no group-key rotation, no custom resolver.
