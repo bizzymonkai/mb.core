@@ -12,7 +12,7 @@ This file is the specification. Files in [docs/](docs/) are retired archives. Do
 - Map MB primitives onto Notention Notes. Class id is a tag `class:<id>` and a property `class is <id>`.
 - Local-first first. Nostr-shaped relay second. Mesh and direct bind later.
 - Agreement is an aim, not a gate. Payments are always accepted. Reputation is optional Endorsements, not a score.
-- No product system, auction system, event system, media system, or social system. Those are properties and views.
+- No product system, auction system, event system, media system, or social system. Those are properties and views. Assets are signed objects and a file view, not a media system.
 - No account server. No sole indexer. No global trending rank. No central ban policy.
 - Workflows are SystemNote templates. They suggest properties. They do not run and do not sequence the network.
 
@@ -27,7 +27,7 @@ This file is the specification. Files in [docs/](docs/) are retired archives. Do
 | [core/vendor/IMPORTED.md](core/vendor/IMPORTED.md) | Pinned upstream commit. |
 | [docs/](docs/) | Retired archives of the notes this README absorbed. Do not update. |
 | [simulator/](simulator/) | Hypothetical business interactions. Notention multi-agent loop, MB primitives. |
-| [ui/](ui/) | Static MonkeyPanel prototypes. HTML/CSS/JS. No npm build. |
+| [ui/](ui/) | Static MonkeyPanel prototypes. HTML/CSS/JS. No npm build. Assets surface is a package-manager file list. |
 | [ui/DEPLOY.md](ui/DEPLOY.md) | Droplet deploy notes. |
 
 ---
@@ -390,7 +390,7 @@ Tests: [core/src/matching.test.ts](core/src/matching.test.ts). `npm test`.
 
 ## UI
 
-Default input is a Situation detector, not a rich-text editor. Bottom nav: Detector | Monitor | Discover | Profile. “+” offers Situation, Tracker, Trigger (optionally Agreement or New Rule).
+Default input is a Situation detector, not a rich-text editor. Bottom nav: Detector | Monitor | Discover | Assets | Profile. “+” offers Situation, Tracker, Trigger (optionally Agreement or New Rule). Assets is a file surface, not an input.
 
 | Mode | Role |
 |------|------|
@@ -441,6 +441,131 @@ Early notes described a temporary `notention9` GitHub package dependency. That l
 
 ---
 
+
+## Assets
+
+Signed media objects. Local-first files that become network-available when an identity or an account key encrypts, signs, and indexes them. Like iCloud with no account server and no storage bill to MB. The peer pays in disk and in the IPFS node they choose to run.
+
+Not a media system. An Asset is a referent, not a thirteenth primitive. It does not match or settle. Situations, Offers, and Messages cite it.
+
+### Plan
+
+1. Local package-manager list. Drag and drop. No network.
+2. Sign and encrypt to an identity key or an account key. Publish an index Note.
+3. Local IPFS node: start, stop, pin the encrypted blob, announce the CID.
+4. On any update, sync. Other devices that hold the same seed pull the new index Note, fetch the CID, decrypt.
+5. Share and attach. Re-encrypt to another peer, or cite the Asset from a primitive.
+
+Persistence is incentivized, not guaranteed. Same rule as Notes. MB does not operate an IPFS cluster.
+
+### Object
+
+| Field | Meaning |
+|-------|---------|
+| id | Asset id. Stable across versions. |
+| owner | Identity pubkey or account pubkey. Either key may encrypt. |
+| name | Display name. Package-manager label. |
+| version | Monotonic. Each update is a new version. |
+| cid | IPFS CID of the encrypted blob. Empty while local-only. |
+| prev | Prior version id, if any. Changelog. |
+| mime | Type. |
+| size | Bytes of the plaintext. |
+| encrypted | True once indexed. |
+| local | True if this device has the plaintext. |
+
+The blob on IPFS is ciphertext. The index Note is signed by the owner key and carries the CID, the wrapped content key, and the version. Devices that can derive that key decrypt. Devices that cannot see a CID they cannot open.
+
+A local-only file is not an Asset yet. Adding it to account assets is the act that signs, encrypts, and indexes it.
+
+### Keys
+
+| Owner | Who can decrypt |
+|-------|-----------------|
+| Identity | Any device with the seed. All child keys can be derived; the identity wraps the content key. |
+| Account | Devices with the seed (they derive the account) or that account key alone. |
+
+Moving an Asset from an account to the identity, or the reverse, re-wraps the content key and publishes a new index Note. The CID can stay if the ciphertext key does not change; if it does, a new CID is pinned and sync starts.
+
+### IPFS node
+
+Each device may run a local IPFS node (Kubo or equivalent). MB starts it, stops it, and reports it. It does not require a remote gateway.
+
+| State | Meaning |
+|-------|---------|
+| stopped | No node. Local files still list. Index and fetch wait. |
+| starting | Process up, not yet listening. |
+| running | Listening. Can add, pin, fetch. |
+| error | Failed. Local files remain. Retry is a user action. |
+
+Indexed Assets are pinned on the device that indexed them. Other devices of the same key fetch by CID and pin locally after decrypt. Unpin is local. Retract hides the index Note; it does not un-publish a CID already on the network.
+
+### Sync
+
+An update is a new version: new ciphertext or new metadata, new index Note citing `prev`, new or same CID.
+
+1. Device writes the new version locally.
+2. If indexed, encrypt, add to IPFS, pin, sign the index Note, publish.
+3. Other devices subscribed to that owner key see the Note.
+4. They fetch the CID, decrypt, replace the local plaintext, keep the prior version.
+5. Two offline updates: both versions kept. Newer signed Note is current. The person picks. No silent merge of bytes.
+
+Sync status on a row: local, indexed, syncing, synced, conflict.
+
+### UI
+
+Package-manager filesystem. One list. Not a feed.
+
+| Column | Shows |
+|--------|-------|
+| name | Label. Drag target. |
+| version | Current. |
+| size | Plaintext bytes. |
+| owner | Identity or account. |
+| status | local / indexed / syncing / synced / conflict |
+| cid | Short CID once indexed. |
+
+Drag a file onto the list to add it. Drop onto a folder row to place it. Folders are names, not a second object type. Multi-select. Sort by name, version, size, status.
+
+### User actions
+
+| Action | Does |
+|--------|------|
+| Open Assets | Show the list for the current identity and its accounts. |
+| Filter | By owner key, status, name, mime. |
+| Search | By name. Local first. |
+| Drag-drop add | File lands local-only. Not yet signed. |
+| Add from picker or camera | Same as drop. |
+| Choose owner | Identity or one account. Default: current account. |
+| Add to account assets | Sign, encrypt to the chosen key, IPFS add, pin, publish index Note. Sync starts. |
+| Keep local only | Leave unsigned. This device only. |
+| Open | Decrypt if needed. Preview or hand to the OS. |
+| Rename | New version Note. Same CID if bytes unchanged. |
+| Replace file | New ciphertext, new CID, new version, sync starts. |
+| Show versions | List prior index Notes. |
+| Revert | Current points at an older version. Sync starts. Bytes of the old version stay. |
+| Delete local copy | Remove plaintext and pin on this device. Index Note stays. |
+| Retract | Signed tombstone on the index Note. Display hides it. Ledger keeps it. CID may remain on IPFS. |
+| Pin | This device keeps the CID. |
+| Unpin | This device may drop the CID. |
+| Start IPFS node | Spin up the local node. |
+| Stop IPFS node | Stop it. Local files remain. Fetch and add wait. |
+| Node status | Running or not, peer count, repo size. |
+| Sync now | Pull index Notes for owned keys, fetch missing CIDs. |
+| Resolve conflict | Pick a version. Other becomes prev. |
+| Move owner | Re-wrap to the other key. New index Note. Sync starts. |
+| Share | Re-encrypt to another peer’s key, or publish a public unencrypted CID. Explicit. |
+| Attach | Cite the Asset from a Situation, Offer, or Message. |
+| Export | Write plaintext to a path the person picks. |
+| Set retention | Expiry on the index Note. Same rules as other Notes. |
+
+Invalid: auto-share, a global media rank, an MB-hosted bucket, treating a CID as a match score.
+
+### What this is not
+
+Not iCloud’s server. Not a media feed. Not a thirteenth primitive. Not a guarantee that a CID is fetchable after every peer unpins it. Free means no middleman fee. It does not mean unlimited hosted storage.
+
+---
+
 ## Simulator
 
 Invent hypothetical business interactions with the MB primitive set.
@@ -482,4 +607,4 @@ Social is concurrent with the protocol (same signed Notes), orthogonal to matchi
 
 ## Still thin
 
-Object model and the five network bases are specified. Still unspecified as code: the Situation→filter builder, the retract Note constructor, the 14-day claim window, replication policy beyond the table above, and group key rotation. Crypto, hash, and relay wire format stay on the Nostr-shaped substrate already in the vendor tree.
+Object model and the five network bases are specified. Assets are specified as signed objects plus a file view; the IPFS node lifecycle and multi-device sync are not code yet. Still unspecified as code: the Situation→filter builder, the retract Note constructor, the 14-day claim window, replication policy beyond the table above, group key rotation, and the Asset index Note constructor. Crypto, hash, and relay wire format stay on the Nostr-shaped substrate already in the vendor tree.
