@@ -6,6 +6,18 @@ Absorbs the under-the-hood of [notention9](https://github.com/autonull/notention
 
 This file is the specification. Files in [docs/](docs/) are retired archives. Do not update them.
 
+
+## MB Network | an open business protocol
+
+- A protocol for a global free-market order. Twelve interaction primitives (Situation, Offer, Conversation, Message, Agreement, Engagement, Event, Invoice, Payment, Receipt, Endorsement, Dispute) are the only verbs. A ride, a repair, a rental, a shared tool, and a direct sale are the same Situation and Offer. No product system, auction system, or media system stands between peers
+- Peer-to-peer commerce that establishes a free market without a platform in the middle, a circular economy of reuse and direct exchange, financial sovereignty, and data sovereignty
+- Disintermediation is the design. Any peer publishes. Any peer matches. No sole indexer, no platform score, no fee gate, no account server, no central ban. Payment is a signed event, always accepted. Agreement is an aim, not a gate
+- Identity, keygen, groups, subscriptions, encryption, and transport are Nostr (NIP-01, NIP-19, NIP-29, NIP-44). Content addressing is Kubo. A node creates a Nostr relay and an IPFS node; each toggles alone. Generate, import, and export of `nsec` are first-class. No new cryptography
+- Matching is local. A Situation is a constraint; an Offer is a fact. Relative sort. The engine absorbs Notention's MatchEngine. Primitive constructors, match tests, and the MonkeyPanel surface are in place
+- Financial sovereignty: no custody, no platform balance, Payment cites the rail the peers choose. Data sovereignty: the `nsec` is the account, the device holds the files, Kubo holds the blobs, the graph is not owned
+
+---
+
 ## Strategy
 
 - Do not rewrite Notention’s matching physics, property system, or transport.
