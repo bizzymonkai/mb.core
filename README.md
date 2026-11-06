@@ -136,14 +136,25 @@ No account server.
 | Username | Display name bound 1:1 to one pubkey. Like a DNS record. Signed claim. No roles granted. |
 | Person | Child of identity. |
 | Company | Child of identity. Same username rules as a person. |
-| Place | Derived network object. Shared ontological white pages index of loci. Not a child key. Not followed. Cited. |
+| Place | Derived network object. Shared ontological white pages index of loci. Not a child key. Has an assigned semantic tag, so it can be followed as a topic. |
 | Group | Associated identity. Own key. Rotates on every membership change. |
 
-Same mnemonic and passphrase restore the same main key on any point of contact. Person and company are children in that tree. A group name is a username on the group key. A Place has a name in the index, not a username on a key.
+Same mnemonic and passphrase restore the same main key on any point of contact. Person and company are children in that tree. A group name is a username on the group key. A Place has a name in the index and a semantic tag. It is not a username on a key.
 
 ### Follow
 
-Any key can be followed. A follow subscribes to a pubkey. A username resolves to a key first (known, then resolver). Following the identity does not follow its child accounts. A Place is not followed.
+Nostr-shaped subscriptions. A follow is a filter, not a platform edge.
+
+| Follow | Filter | Example |
+|--------|--------|---------|
+| Key | author pubkey | an identity, account, person, company, or group |
+| Semantic tag | tag | a Place, a topic, a class, any other tag |
+
+Any key can be followed. A username resolves to a key first (known, then resolver); the subscription is to that pubkey. Following the identity does not follow its child accounts. Each key is its own author filter.
+
+Any semantic tag can be followed the same way a Nostr client follows a topic: subscribe to events carrying that tag. A Place is a topic. It has an assigned semantic tag. Following a Place is a subscription to that tag, not to a key. Notes about the Place carry the tag. The client asks relays for events with it.
+
+Citing a Place (an identity signs that it is at that locus) is not the same as following it.
 
 ### Known
 
@@ -179,7 +190,7 @@ Locked. Revise if a better rule appears. Allowed only as a visible challenge, an
 | Private person, company, or group with a living key | Refused by convention. Flag and suggest another name. |
 | Associated, key dead or retracted | Newer key may claim. Old association is a tombstone. |
 
-Public person: a namespace entry published as a real-world name and not bound to a still-signing key. An actively signed private username is not open. A Place is cited from the index, not claimed as a key.
+Public person: a namespace entry published as a real-world name and not bound to a still-signing key. An actively signed private username is not open. A Place is not claimed as a key. It is cited from the index and followed by its semantic tag.
 
 Challenge, not seizure:
 
@@ -442,7 +453,7 @@ Static prototypes only. Do not run `npm run dev` on the droplet for these surfac
 
 There is no global “current thing.” A client ranks what its relays and follows delivered. Many local views can converge without a platform.
 
-Social is concurrent with the protocol (same signed Notes), orthogonal to matching (a feed does not require MatchEngine), and on top of the primitives (a post is a Message or a Situation with `target=network`; a discussion is a Conversation; a reaction is a Message or an Endorsement; a follow is a subscription to a key).
+Social is concurrent with the protocol (same signed Notes), orthogonal to matching (a feed does not require MatchEngine), and on top of the primitives (a post is a Message or a Situation with `target=network`; a discussion is a Conversation; a reaction is a Message or an Endorsement; a follow is a subscription to a key or to a semantic tag, including a Place).
 
 “Current” in MB is a Situation or Message that nearby peers recently signed, replied to, or matched. The protocol does not rank it.
 
