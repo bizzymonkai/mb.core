@@ -165,9 +165,17 @@ Earlier drafts specified these. They are out. Each one was a cryptographic syste
 
 An identity is an `npub`. The `nsec` signs events and decrypts NIP-44 payloads. Whoever holds the `nsec` is that identity.
 
-Keygen is a library call, done once, on first launch or when the person asks for another key. MB does not implement it.
+Keygen, import, and export are library calls. MB does not implement the key math.
 
-Multi-device: the same `nsec` on each device, or one device holds it and the others request signatures over NIP-46. There is no seed that restores a tree.
+| Action | Does |
+|--------|------|
+| Generate | Call the Nostr library. New `nsec` and `npub`. Shown once. Person confirms they stored it. |
+| Import | Paste an `nsec` or `ncryptsec` (NIP-49). Library validates. Replaces nothing until the person confirms. |
+| Export | Show the `nsec`, or write an `ncryptsec` encrypted with a passphrase they type. Explicit. Never automatic. |
+
+The `nsec` is shown once on generate and once on export. It is not logged. It is not sent to a relay.
+
+Multi-device: the same `nsec` on each device (export, then import), or one device holds it and the others request signatures over NIP-46. There is no seed that restores a tree.
 
 ### Accounts
 
@@ -438,7 +446,41 @@ A new install creates both. Each can be configured and toggled on and off withou
 1. Install the MB node.
 2. Import the relay binary or package into the node. Start it. Its data dir is the node's.
 3. Download the Kubo payload for this OS from the IPFS distribution. Import it. `ipfs init`. Start the daemon.
-4. Keygen is separate and lazy. First launch calls the Nostr library for an `nsec`, or the person pastes one. The node does not derive it.
+4. Keys are separate and lazy. First launch offers generate, import, or skip. Generate calls the Nostr library. Import takes an `nsec` or `ncryptsec`. The node does not derive a key.
+
+
+### Keys on the node
+
+| Action | Does |
+|--------|------|
+| Generate nsec | Library call. New identity or new account. |
+| Import nsec | Paste `nsec` or `ncryptsec`. Validates before it is stored. |
+| Export nsec | Reveal `nsec`, or export `ncryptsec` under a passphrase. Person confirms. |
+| Switch | Which stored key signs. Does not stop the relay or IPFS. |
+
+### Reuse, not invent
+
+These NIPs already exist. Use them when the feature is needed. Do not write a parallel version.
+
+| NIP | Reuse for |
+|-----|-----------|
+| NIP-11 | Relay info document. Node status for the bound relay. |
+| NIP-42 | AUTH. Required for NIP-29 private groups. |
+| NIP-46 | Remote signing. Other devices without copying the `nsec`. |
+| NIP-49 | `ncryptsec`. Encrypted export of an `nsec`. |
+| NIP-65 | Kind 10002 relay list. Devices learn where this key reads and writes. |
+| NIP-51 | Lists. Mute list is a New Rule blacklist. Pin list is pinned Situations. |
+| NIP-38 | User status. Doing Mode and mood, without a new object. |
+| NIP-40 | Expiry tag. Already the retention rule. |
+| NIP-09 | Deletion. Already the retract rule. |
+| NIP-45 | COUNT. "How many events match" for unmatched and adoption counts, without pulling bodies. |
+| NIP-77 | Negentropy. Sync the bound relay with another device's relay. |
+| Ephemeral kinds (20000–29999) | Presence. "Currently doing" that is not stored. |
+| Addressable kinds (30000–39999) | SystemNotes, Asset index, Tracker definitions. Latest replaces. |
+| NIP-47 | Nostr Wallet Connect. A Payment cites a wallet. MB does not hold Lightning keys. |
+| NIP-89 | Application handlers. Other Nostr clients can open an MB event. |
+
+Not in the prototype unless asked: NIP-50 search (relay-dependent), Blossom or NIP-96 media servers (Kubo is the blob store), zaps as a required rail (Payment stays rail-agnostic; NIP-47 is the optional Lightning path).
 
 ### Toggles
 
@@ -624,4 +666,4 @@ Social is concurrent with the protocol (same signed Notes), orthogonal to matchi
 
 ## Still thin
 
-Identity, keygen, groups, subscriptions, encryption, and transport are Nostr. Content addressing is Kubo. Neither service is written here. Still unspecified as code: binding a relay binary into the node, importing the Kubo payload on install, the Situation→NIP-01 filter builder, the application kind table, and the Asset index event. No BIP32 tree, no group-key rotation, no custom resolver.
+Identity, keygen, groups, subscriptions, encryption, and transport are Nostr. Content addressing is Kubo. Neither service is written here. Still unspecified as code: binding a relay binary into the node, importing the Kubo payload on install, generate/import/export wired to a Nostr library, the Situation→NIP-01 filter builder, the application kind table, and the Asset index event. No BIP32 tree, no group-key rotation, no custom resolver.
