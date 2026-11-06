@@ -1,3 +1,7 @@
+> **Retired archive.** Do not update this file.
+> Specifications for this repository live in the top-level [README.md](../README.md).
+> This copy is kept so nothing is lost. It is not the spec.
+
 # SystemNotes
 
 A SystemNote is a signed, reusable description of a rule, goal, constraint, reply path, or template.

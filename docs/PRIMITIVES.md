@@ -1,3 +1,7 @@
+> **Retired archive.** Do not update this file.
+> Specifications for this repository live in the top-level [README.md](../README.md).
+> This copy is kept so nothing is lost. It is not the spec.
+
 # MB Interaction Primitives (application ontology seed)
 
 See the canonical seed for full field cards, reply-graph rules, and conformance hints.

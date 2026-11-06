@@ -1,3 +1,7 @@
+> **Retired archive.** Do not update this file.
+> Specifications for this repository live in the top-level [README.md](../README.md).
+> This copy is kept so nothing is lost. It is not the spec.
+
 # Common Human Situations
 
 Basic, universal, sometimes boring situations are first-class. They are the raw material the Situation detector turns into network intent.

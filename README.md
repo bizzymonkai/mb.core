@@ -4,7 +4,7 @@ MonkeyBusiness network primitive core. Autonomous engine for MonkeyPanel.
 
 Absorbs the under-the-hood of [notention9](https://github.com/autonull/notention9) (semantic matching, Note model, local-first store, NetworkGate/Nostr, ontology engine). Exposes a thin, fixed application ontology of interaction primitives. Does not call Notention as a service, API, or runtime package.
 
-Source notes still live in [docs/](docs/) until that tree is verified and removed. This file is the consolidated spec.
+This file is the specification. Files in [docs/](docs/) are retired archives. Do not update them.
 
 ## Strategy
 
@@ -25,7 +25,7 @@ Source notes still live in [docs/](docs/) until that tree is verified and remove
 | [core/vendor/notention/](core/vendor/notention/) | Owned copy of notention9 `core/src`. Runtime resolves here. |
 | [core/scripts/import-notention.sh](core/scripts/import-notention.sh) | Updater. Re-imports upstream when chosen. Not a build step. |
 | [core/vendor/IMPORTED.md](core/vendor/IMPORTED.md) | Pinned upstream commit. |
-| [docs/](docs/) | Original spec notes. Kept until this README is verified complete. |
+| [docs/](docs/) | Retired archives of the notes this README absorbed. Do not update. |
 | [simulator/](simulator/) | Hypothetical business interactions. Notention multi-agent loop, MB primitives. |
 | [ui/](ui/) | Static MonkeyPanel prototypes. HTML/CSS/JS. No npm build. |
 | [ui/DEPLOY.md](ui/DEPLOY.md) | Droplet deploy notes. |

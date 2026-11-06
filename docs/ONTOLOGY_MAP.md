@@ -1,3 +1,7 @@
+> **Retired archive.** Do not update this file.
+> Specifications for this repository live in the top-level [README.md](../README.md).
+> This copy is kept so nothing is lost. It is not the spec.
+
 # Situations, Templates, Classes, Scenarios
 
 Dependency: `notention9` from `github:autonull/notention9` (see package.json).

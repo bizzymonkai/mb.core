@@ -1,3 +1,7 @@
+> **Retired archive.** Do not update this file.
+> Specifications for this repository live in the top-level [README.md](../README.md).
+> This copy is kept so nothing is lost. It is not the spec.
+
 # MB Trackers and Triggers
 
 Trackers observe. Triggers act. Both can be self-directed or external. Both use templates for dedicated input UXs (not the default Situation detector).
