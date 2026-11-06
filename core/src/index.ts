@@ -34,3 +34,5 @@ export {
 } from './primitives.js';
 
 export type { PrimitiveId, NoteInput, PropInput } from './primitives.js';
+
+export { matchNotes, normalizeWhat3Words, compareWhat3Words, what3WordsTag, WHAT3WORDS_KEY } from './what3words.js';

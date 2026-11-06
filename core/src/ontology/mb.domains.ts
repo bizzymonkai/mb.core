@@ -54,6 +54,12 @@ export const mbDomain: OntologyNode[] = [
           summary: attr('string', 'Human summary of the situation', ['is'], ['contains']),
           target: attr('enum', 'network or identity', ['is'], ['is not'], { options: ['network', 'identity'] }),
           locus: attr('geo', 'Where the situation is', ['is'], ['near'], { aliases: ['loc', 'location'] }),
+          what3words: attr(
+            'what3words',
+            'One 3 m square. Value is word1.word2.word3. Exact only. Do not split the words.',
+            ['is'],
+            []
+          ),
           needBy: attr('datetime', 'When it is needed', ['is'], ['before', 'after']),
           budget: attr('number', 'Budget ceiling', ['is'], ['less than', 'greater than']),
           mood: attr('enum', 'Inferred or stated mood', ['is'], ['is not'], {
@@ -72,6 +78,12 @@ export const mbDomain: OntologyNode[] = [
           role: attr('enum', 'listing or counter', ['is'], ['is not'], { options: ['listing', 'counter'] }),
           price: attr('number', 'Price or rate', ['is'], ['less than', 'greater than'], { aliases: ['$'] }),
           locus: attr('geo', 'Where the offer applies', ['is'], ['near']),
+          what3words: attr(
+            'what3words',
+            'One 3 m square. Value is word1.word2.word3. Exact only. Do not split the words.',
+            ['is'],
+            []
+          ),
           rails: attr('string', 'Accepted settlement rails', ['is'], ['contains']),
         },
       },

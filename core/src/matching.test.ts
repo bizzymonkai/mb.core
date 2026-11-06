@@ -7,6 +7,7 @@ import { describe, it, expect } from 'vitest';
 import { MatchEngine } from '../vendor/notention/matching/MatchEngine.js';
 import type { OntologyNode } from '../vendor/notention/types/domain.js';
 import { createSituation, createOffer, classOf } from './primitives.js';
+import { matchNotes, normalizeWhat3Words } from './what3words.js';
 
 const ontology: OntologyNode[] = [
   {
@@ -130,5 +131,54 @@ describe('MatchEngine with MB primitives', () => {
     const result = engine.calculateMatchScore(situation, offer);
     expect(result.score).toBe(0);
     expect(result.matches).toHaveLength(0);
+  });
+});
+
+describe('what3words', () => {
+  it('groups three words into one address', () => {
+    expect(normalizeWhat3Words('///Filled.Count.Soap')).toBe('filled.count.soap');
+    expect(normalizeWhat3Words('filled count soap')).toBe('filled.count.soap');
+    expect(normalizeWhat3Words('count')).toBeNull();
+    expect(normalizeWhat3Words('filled.count')).toBeNull();
+  });
+
+  it('stores the triple as one property and one tag', () => {
+    const situation = createSituation({
+      title: 'Meet here',
+      what3words: '///filled.count.soap',
+    });
+    const prop = situation.properties.find((p) => p.key === 'what3words');
+    expect(prop?.values).toEqual(['filled.count.soap']);
+    expect(situation.tags).toContain('what3words:filled.count.soap');
+    expect(situation.tags?.filter((t) => t.startsWith('what3words:'))).toHaveLength(1);
+  });
+
+  it('matches only when all three words are the same square', () => {
+    const situation = createSituation({ title: 'Meet', what3words: 'filled.count.soap' });
+    const offer = createOffer({ title: 'There', role: 'listing', what3words: 'filled count soap' });
+
+    const result = matchNotes(engine, situation, offer);
+    const hit = result.matches.find((m) => m.requestProp.key === 'what3words');
+
+    expect(hit?.compatibility).toBe(1);
+    expect(result.conflicts.find((c) => c.requestProp.key === 'what3words')).toBeUndefined();
+  });
+
+  it('does not match a different square or a single shared word', () => {
+    const situation = createSituation({ title: 'Meet', what3words: 'filled.count.soap' });
+    const otherSquare = createOffer({ title: 'Elsewhere', role: 'listing', what3words: 'filled.count.shark' });
+    const oneWord = createOffer({
+      title: 'Word',
+      role: 'listing',
+      properties: [{ key: 'what3words', operator: 'is', values: ['count'] }],
+    });
+
+    const different = matchNotes(engine, situation, otherSquare);
+    expect(different.conflicts.find((c) => c.requestProp.key === 'what3words')?.compatibility).toBe(-1);
+
+    const partial = matchNotes(engine, situation, oneWord);
+    expect(partial.matches.find((m) => m.requestProp.key === 'what3words')).toBeUndefined();
+    expect(partial.conflicts.find((c) => c.requestProp.key === 'what3words')).toBeUndefined();
+    expect(partial.missing.map((p) => p.key)).toContain('what3words');
   });
 });

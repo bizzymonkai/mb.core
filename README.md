@@ -156,6 +156,26 @@ Any semantic tag can be followed the same way a Nostr client follows a topic: su
 
 Citing a Place (an identity signs that it is at that locus) is not the same as following it.
 
+### what3words
+
+[what3words](https://what3words.com/) is a proprietary geocode. The earth is split into about 57 trillion squares of about 3 metres. Each square has one three-word address, written `///word.word.word`. English uses a list of about 40,000 words. Other languages use their own lists of about 25,000. The same square is a different, unrelated triple in each language. Neighboring squares do not share words. MB does not reimplement the mapping and does not turn a triple into coordinates.
+
+All three words have to be present. They are one tag, not three.
+
+`what3words=word1.word2.word3`
+
+| Rule | Why |
+|------|-----|
+| One property, one follow tag `what3words:word1.word2.word3` | A single word is reused on many squares. It is not a place. |
+| Normalize: strip `///`, lowercase, dots or spaces, exactly three words | `///Filled.Count.Soap` and `filled count soap` are the same square. |
+| Exact equality of the whole string. Order matters. | `filled.count.soap` is not `filled.count.shark`. |
+| Do not use the string matcher | Fuzzy and substring would score a typo or one shared word. Those are different squares, often far apart. |
+| No conceptual adjacency inside the triple | `bar` / `pub` does not apply to these words. |
+| No cross-language alias | Another language's words for the same square are a different address. |
+| `near` stays on `locus` | Radius needs coordinates. Word similarity cannot find the next square. |
+
+A what3words tag is a topic filter, same as any other semantic tag. Following it subscribes to events that carry that one tag. It may sit on a Situation or an Offer. Invalid input (not exactly three words) is not stored.
+
 ### Known
 
 Known is not a set of identities. It is namespace entries for already established real-world names, plus the shared Place index.
@@ -354,7 +374,8 @@ Per property: satisfied `1` (or `0–1` for geo/fuzzy), conflict `-1` (geo far `
 | Type | Behavior |
 |------|----------|
 | number | `< > <= >=`, `is` within 5%, `between` |
-| string | exact, contains, Levenshtein |
+| string | exact, contains, Levenshtein, then substring |
+| what3words | exact triple only, via `matchNotes`. Not the string matcher |
 | geo | `near`, haversine, default 50 km, score `1 - distance/max` |
 | date | `before`, `after` |
 | enum | normalized exact, else conflict |

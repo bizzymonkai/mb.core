@@ -7,6 +7,7 @@
  */
 
 import type { Note, Property, PrivacyLevel, NoteStatus } from '../vendor/notention/types/domain.js';
+import { normalizeWhat3Words, what3WordsTag } from './what3words.js';
 
 export type PrimitiveId =
   | 'situation'
@@ -83,6 +84,7 @@ export function createPrimitive(classId: PrimitiveId, input: NoteInput): Note {
 export function createSituation(input: NoteInput & {
   target?: 'network' | 'identity';
   locus?: string;
+  what3words?: string;
   needBy?: string;
   budget?: string;
   mood?: string;
@@ -90,16 +92,21 @@ export function createSituation(input: NoteInput & {
   const props: PropInput[] = [...(input.properties ?? [])];
   if (input.target) props.push({ key: 'target', values: [input.target] });
   if (input.locus) props.push({ key: 'locus', values: [input.locus] });
+  const words = input.what3words ? normalizeWhat3Words(input.what3words) : null;
+  if (words) props.push({ key: 'what3words', values: [words] });
+  const tag = input.what3words ? what3WordsTag(input.what3words) : null;
+  const tags = tag ? [...(input.tags ?? []), tag] : input.tags;
   if (input.needBy) props.push({ key: 'needBy', operator: 'before', values: [input.needBy] });
   if (input.budget) props.push({ key: 'budget', operator: 'less than', values: [input.budget] });
   if (input.mood) props.push({ key: 'mood', values: [input.mood] });
-  return createPrimitive('situation', { ...input, properties: props, privacy: input.privacy ?? 'private' });
+  return createPrimitive('situation', { ...input, properties: props, tags, privacy: input.privacy ?? 'private' });
 }
 
 export function createOffer(input: NoteInput & {
   role: 'listing' | 'counter';
   price?: string;
   locus?: string;
+  what3words?: string;
   rails?: string[];
 }): Note {
   const props: PropInput[] = [
@@ -108,8 +115,12 @@ export function createOffer(input: NoteInput & {
   ];
   if (input.price) props.push({ key: 'price', values: [input.price] });
   if (input.locus) props.push({ key: 'locus', values: [input.locus] });
+  const words = input.what3words ? normalizeWhat3Words(input.what3words) : null;
+  if (words) props.push({ key: 'what3words', values: [words] });
+  const tag = input.what3words ? what3WordsTag(input.what3words) : null;
+  const tags = tag ? [...(input.tags ?? []), tag] : input.tags;
   if (input.rails) props.push({ key: 'rails', values: input.rails });
-  return createPrimitive('offer', { ...input, properties: props });
+  return createPrimitive('offer', { ...input, properties: props, tags });
 }
 
 export function createConversation(input: NoteInput & { situationId?: string }): Note {
