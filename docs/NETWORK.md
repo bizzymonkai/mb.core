@@ -9,20 +9,29 @@ Identity, publish, replication, retract, and fetch are specified here. Crypto, h
 | Term | Meaning |
 |------|---------|
 | Peer | Network endpoint. Address can change. |
-| Identity | One signing key. |
+| Identity | Root signing key. Parent of the children below. |
 | Username | Display name bound 1:1 to one pubkey, like a DNS record. |
-| Account | Child key of a main key. Its own identity. Signs for itself. |
+| Account | Child of identity. Its own key. Signs for itself. |
+| Person | Child of identity. A human peer. |
+| Company | Child of identity. A peer that can act. |
+| Place | Child of identity. A locus the identity claims. |
+| Group | Associated identity. Own key. Rotates on membership change. |
+
+Identity is the root. Account, person, company, and place are child elements. A group is associated and has its own key.
 
 No roles are granted. A username is an attestation the identity signs with its private key: this key claims this name.
 
-Company, person, and group use the same rules. A group name is a username on the group identity.
+Company, person, group, and place use the same username rules. A group name is a username on the group identity.
+
+### Known
+
+White pages hold known identities in a local area. Known means: this identity, and the accounts, companies, persons, places, and groups it has signed as associated. A client uses known to resolve a name without a network crawl.
 
 ### Resolver
 
 A network service, not a central authority, disambiguates.
 
 - Crawls for the same username on mismatched pubkeys, and for UUID collisions.
-- White pages hold known identities in a local area.
 - Examines evidence. Informs both pubkeys that a collision is a network Situation.
 - Suggests the newer claimant pick a different name after a diligent search.
 - A newer participant may still claim an existing name. Method TBD.
@@ -36,20 +45,27 @@ Spoofing is assumed. The defense is the private key: signing requires the key bo
 
 - Same key, new address: username stands. No re-registration.
 - New key: namespace records must be rotated. The old key signs the handoff, or the name is re-claimed and may collide.
+- Child keys (account, company, person, place) are re-derived or re-attested under the new identity key.
 
 ### Open
 
 - Exact procedure when a newer participant claims an existing name.
-- Whether a follow subscribes to a username (resolved) or only to a key.
+- Whether a follow subscribes to a username (resolved via known or resolver) or only to a key.
 
 ## 2. Publish and subscribe
 
 Default transport is a Nostr-shaped relay. One filter language. Mesh and direct bind to the same pipe once the protocol is mature.
 
-| Target | Filter |
-|--------|--------|
+| Target | What it gathers |
+|--------|-----------------|
+| identity | All accounts, groups, companies, persons, and places associated with this identity. |
+| account | That child key only. |
+| company | That company child only. |
+| person | That person child only. |
+| place | That place child only. |
 | network | class, locus, topic, author — any subset. Loose. |
-| identity | notes to a pubkey. Which key (identity vs account) is open. |
+
+`target=identity` is the wide gather. The child targets are narrow.
 
 Matching is loose.
 
