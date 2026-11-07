@@ -55,6 +55,7 @@ export interface RelayOptions {
   path: string;
   binary?: string;
   port?: number;
+  host?: string;
   nip29?: boolean;
 }
 
@@ -70,16 +71,19 @@ export class MbRelay {
   private mode: 'in-process' | 'binary' | 'absent' = 'absent';
   private error?: string;
 
+  private host: string;
+
   constructor(opts: RelayOptions) {
     this.path = opts.path;
     this.port = opts.port ?? 8080;
+    this.host = opts.host ?? process.env.MB_RELAY_HOST ?? '127.0.0.1';
     this.nip29 = opts.nip29 ?? false;
     this.binary = opts.binary ?? process.env.MB_RELAY_BINARY ?? join(opts.path, 'bin', 'nostr-rs-relay');
     mkdirSync(opts.path, { recursive: true });
   }
 
   get url(): string {
-    return `ws://127.0.0.1:${this.port}`;
+    return `ws://${this.host}:${this.port}`;
   }
 
   status(): RelayStatus {
@@ -126,7 +130,7 @@ export class MbRelay {
     this.http.on('upgrade', this.memo.handleUpgrade());
     await new Promise<void>((resolve, reject) => {
       this.http!.once('error', reject);
-      this.http!.listen(this.port, '127.0.0.1', () => resolve());
+      this.http!.listen(this.port, this.host === '127.0.0.1' ? '127.0.0.1' : '0.0.0.0', () => resolve());
     });
     this.mode = 'in-process';
     this.state = 'running';
