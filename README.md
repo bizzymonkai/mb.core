@@ -389,6 +389,124 @@ Tests: [core/src/matching.test.ts](core/src/matching.test.ts). `npm test`.
 
 ---
 
+## Actions
+
+Present tense. Every thing a peer does. The UI is these verbs.
+
+### Boot
+
+- boots the MB node
+- starts the Data module
+- starts the Relay module
+- stops the Data module
+- stops the Relay module
+- reads the boot diagnosis
+
+### Session
+
+- opens an MB session
+- generates a key
+- imports an nsec
+- imports an ncryptsec
+- exports an nsec
+- exports an ncryptsec
+- switches the signing key
+- sets a profile name
+- sets a relay list
+- follows a key
+- follows a tag
+- unfollows a key
+- unfollows a tag
+
+### Situation
+
+- opens the detector
+- speaks into the detector
+- types into the detector
+- captures a photo
+- shares a location
+- sets a mood
+- edits the Situation as a note
+- edits the Situation as a graph
+- edits the Situation as JSON
+- keeps the Situation private
+- publishes the Situation
+- retracts the Situation
+- monitors many Situations
+- monitors one Situation
+- filters to Doing Mode
+- marks a Situation as currently doing
+- schedules a Situation
+- sets a habit window
+- views another peer's Situation
+
+### Offer and reply
+
+- creates an Offer
+- publishes an Offer
+- counters an Offer
+- replies to an Offer
+- accepts an Offer
+- declines an Offer
+- retracts an Offer
+
+### Agreement and settlement
+
+- drafts an Agreement
+- signs an Agreement
+- opens an Engagement
+- advances an Engagement
+- creates an Invoice
+- sends an Invoice
+- records a Payment
+- records a Receipt
+- requests an Endorsement
+- writes an Endorsement
+- opens a Dispute
+- resolves a Dispute
+
+### Conversation
+
+- opens a Conversation on a Situation
+- joins a Conversation
+- leaves a Conversation
+- sends a Message
+- attaches a primitive to a Message
+
+### Rules, trackers, triggers
+
+- states a New Rule
+- saves a SystemNote
+- trusts a received SystemNote
+- creates a Tracker
+- edits a Tracker
+- pauses a Tracker
+- creates a Trigger
+- edits a Trigger
+- pauses a Trigger
+- picks a template
+
+### Assets
+
+- lists assets
+- drops a file
+- encrypts an asset
+- pins an asset
+- fetches an asset
+- updates an asset
+
+### Groups and places
+
+- creates a group
+- joins a group
+- leaves a group
+- adds a member
+- removes a member
+- follows a Place
+- sets a what3words tag
+
+---
+
 ## UI
 
 Default input is a Situation detector, not a rich-text editor. Bottom nav: Detector | Monitor | Discover | Assets | Profile. “+” offers Situation, Tracker, Trigger (optionally Agreement or New Rule). Assets is a file surface, not an input.
