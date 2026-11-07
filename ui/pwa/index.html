@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f1115">
+<title>MB</title>
+<link rel="manifest" href="manifest.webmanifest">
+<style>
+:root {
+  --bg: #0f1115;
+  --surface: #1a1d24;
+  --surface-2: #242830;
+  --border: #2e333d;
+  --text: #e8eaed;
+  --muted: #9aa0a6;
+  --accent: #8ab4f8;
+  --ok: #81c995;
+  --warn: #fdd663;
+  --doing: #c58af9;
+  --danger: #f28b82;
+  --nav-h: 64px;
+  --bar-h: 52px;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text); font: 15px/1.4 system-ui, -apple-system, sans-serif; }
+#app { height: 100%; display: flex; flex-direction: column; max-width: 480px; margin: 0 auto; }
+#bar { height: var(--bar-h); display: flex; align-items: center; justify-content: space-between; padding: 0 16px; border-bottom: 1px solid var(--border); }
+#bar .title { font-weight: 600; }
+#bar .phase { font-size: 12px; padding: 2px 8px; border-radius: 99px; background: var(--surface-2); color: var(--muted); }
+#bar .phase.active { color: var(--ok); }
+#bar .phase.proposed { color: var(--warn); }
+#bar .phase.disputed { color: var(--danger); }
+#body { flex: 1; overflow: auto; padding: 16px; }
+#nav { height: var(--nav-h); display: flex; border-top: 1px solid var(--border); background: var(--surface); }
+#nav button { flex: 1; background: none; border: 0; color: var(--muted); font: inherit; font-size: 11px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
+#nav button.on { color: var(--accent); }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; }
+.card .row { display: flex; justify-content: space-between; align-items: center; }
+.card .sub { color: var(--muted); font-size: 13px; margin-top: 4px; }
+.card button, .btn { background: var(--surface-2); border: 1px solid var(--border); color: var(--text); border-radius: 8px; padding: 8px 12px; font: inherit; }
+.btn.primary { background: var(--accent); color: #111; border: 0; }
+.preview { min-height: 120px; }
+.input-row { display: flex; gap: 8px; margin-top: 12px; }
+.input-row input { flex: 1; background: var(--surface); border: 1px solid var(--border); color: var(--text); border-radius: 8px; padding: 10px; font: inherit; }
+.chips { display: flex; gap: 8px; margin-top: 10px; }
+.chip { background: var(--surface-2); border-radius: 99px; padding: 4px 10px; font-size: 13px; color: var(--muted); }
+.actions { display: flex; gap: 8px; margin-top: 14px; }
+.map { height: 100%; background:
+  radial-gradient(circle at 30% 40%, #1e3a2f 0 8px, transparent 9px),
+  radial-gradient(circle at 60% 55%, #3a2e1e 0 8px, transparent 9px),
+  radial-gradient(circle at 45% 30%, #1e2a3a 0 8px, transparent 9px),
+  var(--surface); border-radius: 12px; position: relative; min-height: 360px; }
+.pin { position: absolute; width: 14px; height: 14px; border-radius: 50%; background: var(--accent); transform: translate(-50%,-50%); }
+.sheet { position: fixed; left: 0; right: 0; bottom: var(--nav-h); max-width: 480px; margin: 0 auto; background: var(--surface); border-top: 1px solid var(--border); border-radius: 16px 16px 0 0; padding: 16px; transform: translateY(100%); transition: transform .2s; }
+.sheet.open { transform: translateY(0); }
+.list-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border); }
+.toggle { color: var(--muted); }
+.toggle.on { color: var(--doing); }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="bar">
+    <span class="title" id="title">Detector</span>
+    <span class="phase" id="phase"></span>
+  </div>
+  <div id="body"></div>
+  <div id="nav">
+    <button data-screen="detector">◉<span>Detector</span></button>
+    <button data-screen="monitor">▤<span>Monitor</span></button>
+    <button data-screen="map">⌖<span>Map</span></button>
+    <button data-screen="assets">▢<span>Assets</span></button>
+    <button data-screen="profile">☺<span>Profile</span></button>
+  </div>
+</div>
+<div class="sheet" id="sheet"></div>
+<script>
+const situations = [
+  { id: 1, title: 'hungry', sub: 'near park · 2 matches', phase: 'active', doing: true, locus: '30,40' },
+  { id: 2, title: 'walking', sub: 'habit · 6–7 pm', phase: 'proposed', doing: false, locus: '60,55' },
+  { id: 3, title: 'need a ride', sub: 'to the store', phase: 'proposed', doing: false, locus: '45,30' },
+];
+const assets = [
+  { name: 'receipt-04.jpg', size: '240 KB' },
+  { name: 'menu.pdf', size: '1.1 MB' },
+];
+const state = { screen: 'detector', doing: false, draft: '', phase: '' };
+
+function setPhase(p) {
+  state.phase = p || '';
+  const el = document.getElementById('phase');
+  el.textContent = state.phase;
+  el.className = 'phase ' + (state.phase || '');
+}
+
+function render() {
+  document.getElementById('title').textContent = ({
+    detector: 'Detector', monitor: 'Monitor', map: 'Map', assets: 'Assets', profile: 'Profile',
+    situation: 'Situation', thread: 'Thread', rules: 'Rules', keys: 'Keys', status: 'Status',
+  })[state.screen] || state.screen;
+  document.querySelectorAll('#nav button').forEach(b => b.classList.toggle('on', b.dataset.screen === state.screen));
+  const body = document.getElementById('body');
+  const s = state.screen;
+  if (s === 'detector') body.innerHTML = detector();
+  else if (s === 'monitor') body.innerHTML = monitor();
+  else if (s === 'map') body.innerHTML = map();
+  else if (s === 'assets') body.innerHTML = assetList();
+  else if (s === 'profile') body.innerHTML = profile();
+  else if (s === 'situation') body.innerHTML = situation();
+  else if (s === 'thread') body.innerHTML = thread();
+  else if (s === 'rules') body.innerHTML = rules();
+  else if (s === 'keys') body.innerHTML = keys();
+  else if (s === 'status') body.innerHTML = status();
+  bind();
+}
+
+function detector() {
+  setPhase('');
+  return `<div class="card preview"><div class="row"><strong>${state.draft || 'a Situation forms here'}</strong></div><div class="sub">text · voice · camera · location · mood</div></div>
+    <div class="input-row"><input id="draft" placeholder="type or speak" value="${state.draft}"><button id="add">add</button></div>
+    <div class="chips"><span class="chip">📷</span><span class="chip">📍</span><span class="chip">🙂</span></div>
+    <div class="actions"><button>private</button><button class="btn primary" id="publish">publish</button></div>`;
+}
+function monitor() {
+  setPhase('');
+  const list = situations.filter(x => !state.doing || x.doing);
+  return `<div class="row"><span class="toggle ${state.doing ? 'on' : ''}" id="doing">Doing ${state.doing ? '●' : '○'}</span><button id="rules">Rules</button></div>
+    ${list.map(x => `<div class="card" data-id="${x.id}"><div class="row"><strong>${x.title}</strong><span class="phase ${x.phase}">${x.phase}</span></div><div class="sub">${x.sub}</div></div>`).join('')}`;
+}
+function map() {
+  setPhase('');
+  return `<div class="map">${situations.map(x => `<div class="pin" style="left:${x.locus.split(',')[0]}%;top:${x.locus.split(',')[1]}%" data-id="${x.id}"></div>`).join('')}</div>
+    <div class="sub" style="margin-top:8px">tap a pin</div>`;
+}
+function assetList() {
+  setPhase('');
+  return assets.map(a => `<div class="card"><div class="row"><strong>${a.name}</strong><span class="sub">${a.size}</span></div></div>`).join('') + `<div class="actions"><button class="btn">drop a file</button></div>`;
+}
+function profile() {
+  setPhase('');
+  return ['Keys','Relays','Status','Data','Relay','Settings'].map(n => `<div class="list-row" data-go="${n.toLowerCase()}"><span>${n}</span><span class="sub">›</span></div>`).join('');
+}
+function situation() {
+  const x = situations.find(s => s.id === state.current) || situations[0];
+  setPhase(x.phase);
+  return `<div class="card"><div class="row"><strong>${x.title}</strong></div><div class="sub">${x.sub}</div></div>
+    <div class="list-row" id="open-thread"><span>Messages</span><span class="sub">›</span></div>
+    <div class="list-row"><span>Offer</span><span class="sub">›</span></div>
+    <div class="actions"><button>edit as note</button><button>edit as JSON</button></div>`;
+}
+function thread() {
+  setPhase(state.phase);
+  return `<div class="card"><div class="sub">linked to a Situation</div><div>anyone nearby?</div></div>
+    <div class="list-row"><span>Group</span><span class="sub">3 members ›</span></div>
+    <div class="input-row"><input placeholder="message"><button>send</button></div>`;
+}
+function rules() {
+  setPhase('');
+  return `<div class="card"><strong>never pay more than 20 for lunch</strong><div class="sub">SystemNote</div></div>
+    <div class="list-row"><span>Tracker</span><span class="sub">›</span></div>
+    <div class="list-row"><span>Trigger</span><span class="sub">›</span></div>`;
+}
+function keys() {
+  setPhase('');
+  return `<div class="card"><div class="sub">npub</div><div>npub1…demo</div></div>
+    <div class="actions"><button>generate</button><button>import nsec</button><button>export</button></div>`;
+}
+function status() {
+  setPhase('');
+  return `<div class="card"><div class="row"><strong>checklist</strong><span class="phase ok">ok</span></div><div class="sub">covered pass · pending recorded</div></div>
+    <div class="list-row"><span>node/account</span><span class="sub">ok</span></div>
+    <div class="list-row"><span>node/relay</span><span class="sub">ok</span></div>
+    <div class="list-row"><span>node/data</span><span class="sub">pending</span></div>`;
+}
+
+function bind() {
+  const draft = document.getElementById('draft');
+  if (draft) draft.addEventListener('input', e => state.draft = e.target.value);
+  const add = document.getElementById('add');
+  if (add) add.onclick = () => render();
+  const pub = document.getElementById('publish');
+  if (pub) pub.onclick = () => { if (state.draft) { situations.unshift({ id: Date.now(), title: state.draft, sub: 'just published', phase: 'proposed', doing: false, locus: '50,50' }); state.draft = ''; state.screen = 'monitor'; render(); } };
+  const doing = document.getElementById('doing');
+  if (doing) doing.onclick = () => { state.doing = !state.doing; render(); };
+  const rulesBtn = document.getElementById('rules');
+  if (rulesBtn) rulesBtn.onclick = () => { state.screen = 'rules'; render(); };
+  document.querySelectorAll('.card[data-id], .pin[data-id]').forEach(el => el.onclick = () => { state.current = Number(el.dataset.id); state.screen = 'situation'; render(); });
+  const ot = document.getElementById('open-thread');
+  if (ot) ot.onclick = () => { state.screen = 'thread'; render(); };
+  document.querySelectorAll('[data-go]').forEach(el => el.onclick = () => { state.screen = el.dataset.go; render(); });
+}
+document.querySelectorAll('#nav button').forEach(b => b.onclick = () => { state.screen = b.dataset.screen; render(); });
+render();
+</script>
+</body>
+</html>
