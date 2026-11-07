@@ -77,6 +77,27 @@ describe('MB Account', () => {
     const decrypted = b.decrypt(ciphertext, recA.npub);
     expect(decrypted).toBe(plaintext);
   });
+
+  it('signs a profile, a follow list, and a deletion', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'mb-account-id-'));
+    const account = new MbAccount(dir);
+    const self = account.generate();
+    const other = account.generate();
+    account.switch(self.npub);
+
+    const profile = account.setProfile({ name: 'alice' });
+    expect(profile.kind).toBe(0);
+    expect(JSON.parse(profile.content).name).toBe('alice');
+    expect(profile.pubkey).toBe(account.pubkey());
+
+    const follows = account.setFollows([other.npub]);
+    expect(follows.kind).toBe(3);
+    expect(follows.tags[0][0]).toBe('p');
+
+    const del = account.deleteEvent([profile.id]);
+    expect(del.kind).toBe(5);
+    expect(del.tags[0]).toEqual(['e', profile.id]);
+  });
 });
 
 describe('MB node modules', () => {
@@ -88,6 +109,6 @@ describe('MB node modules', () => {
     expect(s.data.module).toBe('MB Data');
     expect(s.relay.module).toBe('MB Relay');
     expect(s.data.state).toBe('absent');
-    expect(s.relay.state).toBe('absent');
+    expect(s.relay.state).toBe('stopped');
   });
 });

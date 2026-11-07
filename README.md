@@ -451,7 +451,7 @@ One process. Three modules. Data and Relay are bound services. Account has no pr
 |--------|-------|-------|
 | [node/data](node/data/) | MB Data | Kubo. Fetches the pinned official binary on install, checks SHA512, extracts. |
 | [node/account](node/account/) | MB Account | Nostr identity and keys. `nostr-tools`. Generate, import, export `nsec`. |
-| [node/relay](node/relay/) | MB Relay | A Nostr relay binary. Transport and NIP-29. |
+| [node/relay](node/relay/) | MB Relay | In-process NIP-01 relay so the node runs. A binary replaces it for NIP-29. |
 
 A new install creates Data and Relay. Each toggles alone. Account is always available. Neither service is written by MB.
 

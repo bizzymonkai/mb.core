@@ -41,9 +41,10 @@ export class MbNode {
     };
   }
 
-  /** Create dirs and relay config. Does not start a process. Does not derive a key. */
+  /** Create dirs, relay config, and ensure the Kubo binary is present. Does not derive a key. */
   async install(): Promise<void> {
     this.relay.configure();
+    await this.data.ensureBinary();
   }
 
   async start(which: 'data' | 'relay' | 'both' = 'both'): Promise<void> {

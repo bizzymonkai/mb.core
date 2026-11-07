@@ -147,6 +147,21 @@ export class MbData {
     await this.run([this.binary, 'pin', 'add', cid], { IPFS_PATH: join(this.path, 'ipfs') });
   }
 
+  async fetch(cid: string, dest: string): Promise<void> {
+    await this.ensureBinary();
+    await this.run([this.binary, 'get', cid, '-o', dest], { IPFS_PATH: join(this.path, 'ipfs') });
+  }
+
+  async id(): Promise<string | null> {
+    if (!existsSync(this.binary)) return null;
+    try {
+      const out = await this.run([this.binary, 'id', '-f', '<id>'], { IPFS_PATH: join(this.path, 'ipfs') });
+      return out.trim() || null;
+    } catch {
+      return null;
+    }
+  }
+
   private run(cmd: string[], env: Record<string, string>): Promise<string> {
     return new Promise((resolve, reject) => {
       const child = spawn(cmd[0], cmd.slice(1), { env: { ...process.env, ...env } });

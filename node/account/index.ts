@@ -154,6 +154,69 @@ export class MbAccount {
     return nip44.decrypt(ciphertext, conversationKey);
   }
 
+  /** Hex pubkey of the current (or given) key. Other modules use this, not the nsec. */
+  pubkey(npub?: string): string {
+    const nsec = this.export(npub);
+    const decoded = nip19.decode(nsec);
+    if (decoded.type !== 'nsec') throw new Error('MB Account: cannot read pubkey');
+    return getPublicKey(decoded.data as Uint8Array);
+  }
+
+  /** Kind 0. Username and optional NIP-05. Signed, not published. */
+  setProfile(profile: { name?: string; about?: string; nip05?: string }, npub?: string): Event {
+    return this.sign({
+      kind: 0,
+      created_at: Math.floor(Date.now() / 1000),
+      tags: [],
+      content: JSON.stringify(profile),
+    }, npub);
+  }
+
+  /** Kind 3 contact list. Each npub becomes a p tag. Signed, not published. */
+  setFollows(npubs: string[], npub?: string): Event {
+    const tags = npubs.map((n) => {
+      const hex = n.startsWith('npub1') ? (nip19.decode(n).data as string) : n;
+      return ['p', hex];
+    });
+    return this.sign({
+      kind: 3,
+      created_at: Math.floor(Date.now() / 1000),
+      tags,
+      content: '',
+    }, npub);
+  }
+
+  /** Kind 10002 relay list. NIP-65. Signed, not published. */
+  setRelayList(relays: Array<{ url: string; read?: boolean; write?: boolean }>, npub?: string): Event {
+    const tags = relays.map((r) => {
+      const t = ['r', r.url];
+      if (r.read && !r.write) t.push('read');
+      else if (r.write && !r.read) t.push('write');
+      return t;
+    });
+    return this.sign({
+      kind: 10002,
+      created_at: Math.floor(Date.now() / 1000),
+      tags,
+      content: '',
+    }, npub);
+  }
+
+  /** Kind 5. NIP-09 deletion. Display hides. Relays may keep the event. Signed, not published. */
+  deleteEvent(ids: string[], npub?: string): Event {
+    return this.sign({
+      kind: 5,
+      created_at: Math.floor(Date.now() / 1000),
+      tags: ids.map((id) => ['e', id]),
+      content: '',
+    }, npub);
+  }
+
+  /** NIP-40. Attach an expiration tag. Does not sign. */
+  withExpiration(event: UnsignedEvent, unix: number): UnsignedEvent {
+    return { ...event, tags: [...(event.tags ?? []), ['expiration', String(unix)]] };
+  }
+
   switch(npub: string): void {
     if (!this.records.has(npub)) throw new Error('MB Account: unknown npub');
     this.currentNpub = npub;
