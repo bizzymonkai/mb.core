@@ -686,6 +686,17 @@ Social is concurrent with the protocol (same signed Notes), orthogonal to matchi
 
 ---
 
-## Still thin
+## TODO
 
-Identity, keygen, groups, subscriptions, encryption, and transport are Nostr. Content addressing is Kubo. Neither service is written here. Still unspecified as code: binding a relay binary into the node, importing the Kubo payload on install, generate/import/export wired to a Nostr library, the Situation→NIP-01 filter builder, the application kind table, and the Asset index event. No BIP32 tree, no group-key rotation, no custom resolver.
+Done and not repeated here: Account (nsec, ncryptsec, sign, NIP-44, kind 0/3/5/10002), Data (Kubo fetch, SHA512, init, add, pin, fetch), Relay (in-process NIP-01, publish, query), boot diagnostics.
+
+| Open | Why it is next |
+|------|----------------|
+| Situation → NIP-01 filter | Matching still runs on events already in hand. A Situation does not yet build the `REQ` that asks the relay for more. |
+| Application kind table | The twelve primitives are not yet assigned Nostr kinds. Until they are, a Situation and a note look the same on the wire. |
+| Asset index event | Files can be pinned. There is no addressable event that lists a key's assets so another device can find them. |
+| NIP-29 groups | The in-process relay is NIP-01. Groups need a binary relay that enforces membership. No official binary is published to fetch. |
+| SystemNotes as addressable events | Rules, trackers, and triggers are specified. They are not yet kind 30000–39999 events that replace on update. |
+| Live follow | Kind 3 is signed. The node does not yet open a `REQ` for the followed keys and tags. |
+
+Not a gap: no BIP32 tree, no group-key rotation, no custom resolver. Those were dropped on purpose.
