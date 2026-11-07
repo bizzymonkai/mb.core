@@ -5,7 +5,8 @@
   "description": "MonkeyBusiness network primitive core engine prototype",
   "scripts": {
     "build": "echo 'not yet implemented'",
-    "test": "vitest run"
+    "test": "vitest run",
+    "diagnose": "node --experimental-strip-types node/diagnose-cli.ts"
   },
   "devDependencies": {
     "react": "^18.3.1",

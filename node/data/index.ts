@@ -11,6 +11,7 @@ import { createHash } from 'node:crypto';
 import { mkdirSync, existsSync, writeFileSync, readFileSync, chmodSync } from 'node:fs';
 import { join } from 'node:path';
 import { MODULES } from '../labels.js';
+import { runChecks, type Diagnosis } from '../diagnose.js';
 
 export const LABEL = MODULES.data;
 
@@ -160,6 +161,42 @@ export class MbData {
     } catch {
       return null;
     }
+  }
+
+  lastDiagnosis: Diagnosis | null = null;
+
+  /**
+   * Operational check. Does not download. Reports whether the binary is present
+   * and whether the daemon answers. Called after start.
+   */
+  async diagnose(): Promise<Diagnosis> {
+    this.lastDiagnosis = await runChecks(LABEL, [
+      {
+        name: 'binary present',
+        run: () => {
+          if (!existsSync(this.binary)) {
+            throw new Error(`absent at ${this.binary}. install fetches ${MbData.payloadUrl(this.version)}`);
+          }
+        },
+      },
+      {
+        name: 'binary answers version',
+        run: async () => {
+          if (!existsSync(this.binary)) throw new Error('no binary');
+          const out = await this.run([this.binary, 'version'], {});
+          if (!out.includes('ipfs')) throw new Error(out.trim());
+        },
+      },
+      {
+        name: 'daemon answers id',
+        run: async () => {
+          if (this.state !== 'running') throw new Error('daemon not running');
+          const id = await this.id();
+          if (!id) throw new Error('no peer id');
+        },
+      },
+    ]);
+    return this.lastDiagnosis;
   }
 
   private run(cmd: string[], env: Record<string, string>): Promise<string> {

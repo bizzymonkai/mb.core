@@ -10,11 +10,13 @@ import { MbData } from './data/index.js';
 import { MbAccount } from './account/index.js';
 import { MbRelay } from './relay/index.js';
 import { MODULES, type ModuleId } from './labels.js';
+import { formatDiagnosis, type Diagnosis } from './diagnose.js';
 
 export { MODULES };
 export { MbData } from './data/index.js';
 export { MbAccount } from './account/index.js';
 export { MbRelay } from './relay/index.js';
+export { formatDiagnosis, type Diagnosis } from './diagnose.js';
 
 export interface NodeStatus {
   data: ReturnType<MbData['status']>;
@@ -48,8 +50,25 @@ export class MbNode {
   }
 
   async start(which: 'data' | 'relay' | 'both' = 'both'): Promise<void> {
-    if (which === 'data' || which === 'both') await this.data.start();
-    if (which === 'relay' || which === 'both') await this.relay.start();
+    if (which === 'data' || which === 'both') {
+      await this.data.start();
+      await this.data.diagnose();
+    }
+    if (which === 'relay' || which === 'both') {
+      await this.relay.start();
+      await this.relay.diagnose();
+    }
+  }
+
+  /**
+   * Boot diagnostic. Account always. Data and Relay if they are up.
+   * Returns one report per module. Does not throw.
+   */
+  async diagnose(): Promise<Diagnosis[]> {
+    const reports = [await this.account.diagnose()];
+    if (this.data.status().state === 'running') reports.push(await this.data.diagnose());
+    if (this.relay.status().state === 'running') reports.push(await this.relay.diagnose());
+    return reports;
   }
 
   async stop(which: 'data' | 'relay' | 'both' = 'both'): Promise<void> {

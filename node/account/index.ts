@@ -9,9 +9,11 @@ import { generateSecretKey, getPublicKey, finalizeEvent, type Event, type Unsign
 import * as nip19 from 'nostr-tools/nip19';
 import * as nip44 from 'nostr-tools/nip44';
 import { encrypt as nip49Encrypt, decrypt as nip49Decrypt } from 'nostr-tools/nip49';
-import { mkdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync, existsSync, mkdtempSync } from 'node:fs';
 import { join } from 'node:path';
+import { tmpdir } from 'node:os';
 import { MODULES } from '../labels.js';
+import { runChecks, type Diagnosis } from '../diagnose.js';
 
 export const LABEL = MODULES.account;
 
@@ -234,6 +236,65 @@ export class MbAccount {
 
   status(): AccountStatus {
     return { module: LABEL, count: this.records.size, current: this.currentNpub };
+  }
+
+  lastDiagnosis: Diagnosis | null = null;
+
+  /**
+   * Operational check. Runs against a scratch store so the live keys are untouched.
+   * Called on node boot. Same checks the unit tests call.
+   */
+  async diagnose(): Promise<Diagnosis> {
+    const scratch = new MbAccount(mkdtempSync(join(tmpdir(), 'mb-account-diag-')));
+    this.lastDiagnosis = await runChecks(LABEL, [
+      {
+        name: 'generate nsec and npub',
+        run: () => {
+          const rec = scratch.generate('diag');
+          if (!rec.nsec.startsWith('nsec1') || !rec.npub.startsWith('npub1')) {
+            throw new Error('bad key encoding');
+          }
+        },
+      },
+      {
+        name: 'import and export nsec',
+        run: () => {
+          const rec = scratch.generate();
+          const again = scratch.import(rec.nsec);
+          if (again.npub !== rec.npub) throw new Error('import changed npub');
+          if (scratch.export(rec.npub) !== rec.nsec) throw new Error('export mismatch');
+        },
+      },
+      {
+        name: 'sign a kind 0 profile',
+        run: () => {
+          const ev = scratch.setProfile({ name: 'diag' });
+          if (ev.kind !== 0 || !ev.sig || ev.pubkey !== scratch.pubkey()) {
+            throw new Error('profile not signed by current key');
+          }
+        },
+      },
+      {
+        name: 'NIP-44 encrypt and decrypt',
+        run: () => {
+          const other = new MbAccount(mkdtempSync(join(tmpdir(), 'mb-account-peer-')));
+          const peer = other.generate();
+          const cipher = scratch.encrypt('diag', peer.npub);
+          const plain = other.decrypt(cipher, scratch.current()!.npub);
+          if (plain !== 'diag') throw new Error('round trip failed');
+        },
+      },
+      {
+        name: 'NIP-49 ncryptsec round trip',
+        run: () => {
+          const wrapped = scratch.exportNcryptsec('diag-pass');
+          const fresh = new MbAccount(mkdtempSync(join(tmpdir(), 'mb-account-nc-')));
+          const rec = fresh.importNcryptsec(wrapped, 'diag-pass');
+          if (rec.npub !== scratch.current()!.npub) throw new Error('ncryptsec npub mismatch');
+        },
+      },
+    ]);
+    return this.lastDiagnosis;
   }
 
   private load(): void {

@@ -455,6 +455,9 @@ One process. Three modules. Data and Relay are bound services. Account has no pr
 
 A new install creates Data and Relay. Each toggles alone. Account is always available. Neither service is written by MB.
 
+Each module diagnoses itself on boot. `node.diagnose()` runs the same checks the unit tests run. `npm run diagnose` prints the report. A failed check is recorded, not thrown.
+
+
 | Service | What is bound | On install |
 |---------|---------------|------------|
 | Nostr relay | A Nostr relay implementation. strfry, nostr-rs-relay, khatru, or equivalent. Speaks NIP-01. Hosts NIP-29 groups for this node. | Created, running, loopback |

@@ -16,6 +16,7 @@ import { Relay, useWebSocketImplementation } from 'nostr-tools/relay';
 import type { Event, Filter } from 'nostr-tools';
 import WebSocket from 'ws';
 import { MODULES } from '../labels.js';
+import { runChecks, type Diagnosis } from '../diagnose.js';
 
 /** nostr-tools expects event.data to be a string. ws delivers a Buffer. */
 function asStringWebSocket(Base: typeof WebSocket) {
@@ -155,6 +156,43 @@ export class MbRelay {
     }
     this.state = 'stopped';
     this.mode = 'absent';
+  }
+
+  lastDiagnosis: Diagnosis | null = null;
+
+  /**
+   * Operational check. Starts the relay if it is down, publishes a note,
+   * reads it back, and stops the relay if this check started it.
+   */
+  async diagnose(): Promise<Diagnosis> {
+    const startedHere = this.state !== 'running';
+    this.lastDiagnosis = await runChecks(LABEL, [
+      {
+        name: 'relay accepts a connection',
+        run: async () => {
+          if (this.state !== 'running') await this.start();
+          const relay = await Relay.connect(this.url);
+          relay.close();
+        },
+      },
+      {
+        name: 'publish and query a note',
+        run: async () => {
+          const { generateSecretKey, getPublicKey, finalizeEvent } = await import('nostr-tools');
+          const sk = generateSecretKey();
+          const pk = getPublicKey(sk);
+          const event = finalizeEvent(
+            { kind: 1, created_at: Math.floor(Date.now() / 1000), tags: [], content: 'diag' },
+            sk,
+          );
+          await this.publish(event);
+          const found = await this.query({ kinds: [1], authors: [pk] });
+          if (!found.some((e) => e.id === event.id)) throw new Error('published note not returned');
+        },
+      },
+    ]);
+    if (startedHere) await this.stop();
+    return this.lastDiagnosis;
   }
 
   /** Publish a signed event to the bound relay. */
