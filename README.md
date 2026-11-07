@@ -129,6 +129,12 @@ Five in the nav: Detector, Monitor, Map, Assets, Profile. Engagement is a phase 
 
 The PWA is [ui/pwa/index.html](ui/pwa/index.html). No build step.
 
+## v0.1 — two peers, one exchange
+
+Two `MbNode` instances. One relay. No central index. Proven by [node/exchange.test.ts](node/exchange.test.ts).
+
+Peer A publishes a Situation. Peer B finds it and publishes an Offer. They exchange Messages. Both sign an Agreement with identical terms. Both signatures verify. Each peer writes a log. On restart, the key and the log are still there. The relay is in-memory and is not the record.
+
 ## TODO
 
 | Open | Why |
