@@ -33,6 +33,50 @@ describe('MB Account', () => {
     const account = new MbAccount(dir);
     expect(() => account.import('not-a-key')).toThrow();
   });
+
+  it('round-trips ncryptsec (NIP-49)', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'mb-account-'));
+    const account = new MbAccount(dir);
+    const rec = account.generate();
+    const pass = 'test-passphrase';
+    const ncrypt = account.exportNcryptsec(pass);
+    expect(ncrypt.startsWith('ncryptsec1')).toBe(true);
+
+    const other = new MbAccount(mkdtempSync(join(tmpdir(), 'mb-account2-')));
+    const imported = other.importNcryptsec(ncrypt, pass, { makeCurrent: true });
+    expect(imported.npub).toBe(rec.npub);
+    expect(other.export()).toBe(rec.nsec);
+  });
+
+  it('signs an event', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'mb-account-'));
+    const account = new MbAccount(dir);
+    account.generate();
+    const unsigned = {
+      kind: 1,
+      content: 'hello mb',
+      tags: [['class', 'Message']],
+      created_at: Math.floor(Date.now() / 1000),
+    };
+    const signed = account.sign(unsigned);
+    expect(signed.sig).toBeTruthy();
+    expect(signed.pubkey).toBeTruthy();
+    expect(signed.id).toBeTruthy();
+  });
+
+  it('encrypts and decrypts with NIP-44', () => {
+    const dirA = mkdtempSync(join(tmpdir(), 'mb-a-'));
+    const dirB = mkdtempSync(join(tmpdir(), 'mb-b-'));
+    const a = new MbAccount(dirA);
+    const b = new MbAccount(dirB);
+    const recA = a.generate();
+    const recB = b.generate();
+
+    const plaintext = 'secret note';
+    const ciphertext = a.encrypt(plaintext, recB.npub);
+    const decrypted = b.decrypt(ciphertext, recA.npub);
+    expect(decrypted).toBe(plaintext);
+  });
 });
 
 describe('MB node modules', () => {
