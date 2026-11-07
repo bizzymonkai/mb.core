@@ -393,16 +393,24 @@ Tests: [core/src/matching.test.ts](core/src/matching.test.ts). `npm test`.
 
 Present tense. Every thing a peer does. The UI is these verbs. Each action is a row in [node/checklist.ts](node/checklist.ts). `npm run checklist` runs the covered ones and records the pending ones. `npm run status` serves the same report at `http://127.0.0.1:$MB_PORT/status` (default port 8787).
 
-### Boot
+Grouped by the module the UI is built from.
+
+### node
 
 - boots the MB node
-- starts the Data module
-- starts the Relay module
-- stops the Data module
-- stops the Relay module
 - reads the boot diagnosis
 
-### Session
+### node/data
+
+- starts the Data module
+- stops the Data module
+
+### node/relay
+
+- starts the Relay module
+- stops the Relay module
+
+### node/account
 
 - opens an MB session
 - generates a key
@@ -413,24 +421,18 @@ Present tense. Every thing a peer does. The UI is these verbs. Each action is a 
 - switches the signing key
 - sets a profile name
 - sets a relay list
-- follows a key
-- follows a tag
-- unfollows a key
-- unfollows a tag
 
-### Situation
+### situation
 
 - opens the detector
 - speaks into the detector
 - types into the detector
 - captures a photo
-- shares a location
 - sets a mood
 - edits the Situation as a note
 - edits the Situation as a graph
 - edits the Situation as JSON
 - keeps the Situation private
-- publishes the Situation
 - retracts the Situation
 - monitors many Situations
 - monitors one Situation
@@ -438,9 +440,25 @@ Present tense. Every thing a peer does. The UI is these verbs. Each action is a 
 - marks a Situation as currently doing
 - schedules a Situation
 - sets a habit window
-- views another peer's Situation
 
-### Offer and reply
+### network
+
+- publishes the Situation
+- shares a location
+- follows a key
+- follows a tag
+- unfollows a key
+- unfollows a tag
+- views another peer's Situation
+- follows a Place
+- sets a what3words tag
+- creates a group
+- joins a group
+- leaves a group
+- adds a member
+- removes a member
+
+### exchange
 
 - creates an Offer
 - publishes an Offer
@@ -449,9 +467,6 @@ Present tense. Every thing a peer does. The UI is these verbs. Each action is a 
 - accepts an Offer
 - declines an Offer
 - retracts an Offer
-
-### Agreement and settlement
-
 - drafts an Agreement
 - signs an Agreement
 - opens an Engagement
@@ -465,7 +480,7 @@ Present tense. Every thing a peer does. The UI is these verbs. Each action is a 
 - opens a Dispute
 - resolves a Dispute
 
-### Conversation
+### conversation
 
 - opens a Conversation on a Situation
 - joins a Conversation
@@ -473,7 +488,7 @@ Present tense. Every thing a peer does. The UI is these verbs. Each action is a 
 - sends a Message
 - attaches a primitive to a Message
 
-### Rules, trackers, triggers
+### rules
 
 - states a New Rule
 - saves a SystemNote
@@ -486,7 +501,7 @@ Present tense. Every thing a peer does. The UI is these verbs. Each action is a 
 - pauses a Trigger
 - picks a template
 
-### Assets
+### assets
 
 - lists assets
 - drops a file
@@ -494,16 +509,6 @@ Present tense. Every thing a peer does. The UI is these verbs. Each action is a 
 - pins an asset
 - fetches an asset
 - updates an asset
-
-### Groups and places
-
-- creates a group
-- joins a group
-- leaves a group
-- adds a member
-- removes a member
-- follows a Place
-- sets a what3words tag
 
 ---
 
