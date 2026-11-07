@@ -13,6 +13,7 @@
     "zod": "^3.25.76"
   },
   "dependencies": {
+    "kubo": "^0.43.1",
     "nostr-tools": "^2.26.0"
   }
 }

@@ -449,7 +449,7 @@ One process. Three modules. Data and Relay are bound services. Account has no pr
 
 | Module | Label | Binds |
 |--------|-------|-------|
-| [node/data](node/data/) | MB Data | Kubo. Content addressing. |
+| [node/data](node/data/) | MB Data | Kubo. Fetches the pinned official binary on install, checks SHA512, extracts. |
 | [node/account](node/account/) | MB Account | Nostr identity and keys. `nostr-tools`. Generate, import, export `nsec`. |
 | [node/relay](node/relay/) | MB Relay | A Nostr relay binary. Transport and NIP-29. |
 
