@@ -58,7 +58,8 @@ export interface ChecklistReport {
 
 function scratch(): ChecklistContext {
   const root = mkdtempSync(join(tmpdir(), 'mb-check-'));
-  const node = new MbNode(root);
+  const port = 20000 + Math.floor(Math.random() * 20000);
+  const node = new MbNode(root, { relayPort: port });
   return { node, account: node.account };
 }
 

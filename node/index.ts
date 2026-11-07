@@ -29,10 +29,10 @@ export class MbNode {
   readonly account: MbAccount;
   readonly relay: MbRelay;
 
-  constructor(root: string) {
+  constructor(root: string, opts: { relayPort?: number } = {}) {
     this.data = new MbData({ path: join(root, 'data') });
     this.account = new MbAccount(join(root, 'account'));
-    this.relay = new MbRelay({ path: join(root, 'relay') });
+    this.relay = new MbRelay({ path: join(root, 'relay'), port: opts.relayPort });
   }
 
   status(): NodeStatus {
