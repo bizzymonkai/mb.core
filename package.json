@@ -6,7 +6,8 @@
   "scripts": {
     "build": "echo 'not yet implemented'",
     "test": "vitest run",
-    "diagnose": "node --experimental-strip-types node/diagnose-cli.ts"
+    "diagnose": "node --experimental-strip-types node/diagnose-cli.ts",
+    "checklist": "node --experimental-strip-types -e \"import('./node/checklist.ts').then(m=>m.runChecklist().then(r=>{console.log(m.formatChecklist(r));process.exit(r.ok?0:1)}))\""
   },
   "devDependencies": {
     "react": "^18.3.1",

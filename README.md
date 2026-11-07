@@ -391,7 +391,7 @@ Tests: [core/src/matching.test.ts](core/src/matching.test.ts). `npm test`.
 
 ## Actions
 
-Present tense. Every thing a peer does. The UI is these verbs.
+Present tense. Every thing a peer does. The UI is these verbs. Each action is a row in [node/checklist.ts](node/checklist.ts). `npm run checklist` runs the covered ones and records the pending ones.
 
 ### Boot
 
