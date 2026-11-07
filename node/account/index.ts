@@ -5,8 +5,10 @@
  * Keygen, import, and export are nostr-tools calls. MB does not implement the key math.
  */
 
-import { generateSecretKey, getPublicKey } from 'nostr-tools';
+import { generateSecretKey, getPublicKey, finalizeEvent, type Event, type UnsignedEvent } from 'nostr-tools';
 import * as nip19 from 'nostr-tools/nip19';
+import * as nip44 from 'nostr-tools/nip44';
+import { encrypt as nip49Encrypt, decrypt as nip49Decrypt } from 'nostr-tools/nip49';
 import { mkdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { MODULES } from '../labels.js';
@@ -76,6 +78,28 @@ export class MbAccount {
     return rec;
   }
 
+  /** Import an ncryptsec (NIP-49). Decrypts with passphrase, then stores the nsec. */
+  importNcryptsec(ncryptsec: string, passphrase: string, opts: { label?: string; makeCurrent?: boolean } = {}): AccountRecord {
+    let sk: Uint8Array;
+    try {
+      sk = nip49Decrypt(ncryptsec.trim(), passphrase);
+    } catch {
+      throw new Error('MB Account: failed to decrypt ncryptsec (bad passphrase or invalid)');
+    }
+    const pk = getPublicKey(sk);
+    const npub = nip19.npubEncode(pk);
+    const rec: AccountRecord = {
+      npub,
+      nsec: nip19.nsecEncode(sk),
+      createdAt: new Date().toISOString(),
+      label: opts.label,
+    };
+    this.records.set(npub, rec);
+    if (opts.makeCurrent || !this.currentNpub) this.currentNpub = npub;
+    this.save();
+    return rec;
+  }
+
   /** Reveal the nsec. Explicit. Never sent to a relay by this module. */
   export(npub?: string): string {
     const key = npub ?? this.currentNpub;
@@ -83,6 +107,51 @@ export class MbAccount {
     const rec = this.records.get(key);
     if (!rec) throw new Error('MB Account: unknown npub');
     return rec.nsec;
+  }
+
+  /** Export as ncryptsec (NIP-49). Caller supplies passphrase. Does not change stored nsec. */
+  exportNcryptsec(passphrase: string, npub?: string): string {
+    if (!passphrase) throw new Error('MB Account: passphrase required for ncryptsec export');
+    const nsec = this.export(npub);
+    const decoded = nip19.decode(nsec);
+    if (decoded.type !== 'nsec') throw new Error('MB Account: internal nsec invalid');
+    const sk = decoded.data as Uint8Array;
+    return nip49Encrypt(sk, passphrase);
+  }
+
+  /** Sign an unsigned event with the current (or given) key. */
+  sign(event: UnsignedEvent, npub?: string): Event {
+    const nsec = this.export(npub);
+    const decoded = nip19.decode(nsec);
+    if (decoded.type !== 'nsec') throw new Error('MB Account: cannot sign without nsec');
+    const sk = decoded.data as Uint8Array;
+    return finalizeEvent(event, sk);
+  }
+
+  /** NIP-44 encrypt plaintext to a recipient pubkey (hex or npub). */
+  encrypt(plaintext: string, recipientPubkey: string, npub?: string): string {
+    const nsec = this.export(npub);
+    const decoded = nip19.decode(nsec);
+    if (decoded.type !== 'nsec') throw new Error('MB Account: cannot encrypt without nsec');
+    const sk = decoded.data as Uint8Array;
+    const pk = recipientPubkey.startsWith('npub1')
+      ? (nip19.decode(recipientPubkey).data as string)
+      : recipientPubkey;
+    const conversationKey = nip44.getConversationKey(sk, pk);
+    return nip44.encrypt(plaintext, conversationKey);
+  }
+
+  /** NIP-44 decrypt ciphertext from a sender pubkey (hex or npub). */
+  decrypt(ciphertext: string, senderPubkey: string, npub?: string): string {
+    const nsec = this.export(npub);
+    const decoded = nip19.decode(nsec);
+    if (decoded.type !== 'nsec') throw new Error('MB Account: cannot decrypt without nsec');
+    const sk = decoded.data as Uint8Array;
+    const pk = senderPubkey.startsWith('npub1')
+      ? (nip19.decode(senderPubkey).data as string)
+      : senderPubkey;
+    const conversationKey = nip44.getConversationKey(sk, pk);
+    return nip44.decrypt(ciphertext, conversationKey);
   }
 
   switch(npub: string): void {
