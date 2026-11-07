@@ -8,7 +8,8 @@
     "test": "vitest run",
     "diagnose": "tsx node/diagnose-cli.ts",
     "checklist": "tsx node/checklist-cli.ts",
-    "status": "tsx node/status.ts"
+    "status": "tsx node/status.ts",
+    "peer": "tsx node/peer.ts"
   },
   "devDependencies": {
     "react": "^18.3.1",
