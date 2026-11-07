@@ -11,5 +11,8 @@
     "react": "^18.3.1",
     "vitest": "^2.1.0",
     "zod": "^3.25.76"
+  },
+  "dependencies": {
+    "nostr-tools": "^2.26.0"
   }
 }

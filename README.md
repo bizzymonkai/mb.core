@@ -40,6 +40,7 @@ This file is the specification. Files in [docs/](docs/) are retired archives. Do
 | [core/vendor/IMPORTED.md](core/vendor/IMPORTED.md) | Pinned upstream commit. |
 | [docs/](docs/) | Retired archives of the notes this README absorbed. Do not update. |
 | [simulator/](simulator/) | Hypothetical business interactions. Notention multi-agent loop, MB primitives. |
+| [node/](node/) | MB node. Three modules: Data (Kubo), Account (Nostr keys), Relay (Nostr relay). |
 | [ui/](ui/) | Static MonkeyPanel prototypes. HTML/CSS/JS. No npm build. Assets surface is a package-manager file list. |
 | [ui/DEPLOY.md](ui/DEPLOY.md) | Droplet deploy notes. |
 
@@ -444,9 +445,15 @@ Early notes described a temporary `notention9` GitHub package dependency. That l
 
 ## MB node
 
-One process. Two bound services. Neither is written by MB.
+One process. Three modules. Data and Relay are bound services. Account has no process.
 
-A new install creates both. Each can be configured and toggled on and off without the other.
+| Module | Label | Binds |
+|--------|-------|-------|
+| [node/data](node/data/) | MB Data | Kubo. Content addressing. |
+| [node/account](node/account/) | MB Account | Nostr identity and keys. `nostr-tools`. Generate, import, export `nsec`. |
+| [node/relay](node/relay/) | MB Relay | A Nostr relay binary. Transport and NIP-29. |
+
+A new install creates Data and Relay. Each toggles alone. Account is always available. Neither service is written by MB.
 
 | Service | What is bound | On install |
 |---------|---------------|------------|
