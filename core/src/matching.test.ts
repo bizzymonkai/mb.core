@@ -4,8 +4,8 @@
  * Run: npx vitest run core/src/matching.test.ts
  */
 import { describe, it, expect } from 'vitest';
-import { MatchEngine } from '../vendor/notention/matching/MatchEngine.js';
-import type { OntologyNode } from '../vendor/notention/types/domain.js';
+import { MatchEngine } from '@notention/core/matching/MatchEngine.js';
+import type { OntologyNode } from '@notention/core/types/domain.js';
 import { createSituation, createOffer, classOf } from './primitives.js';
 import { matchNotes, normalizeWhat3Words } from './what3words.js';
 

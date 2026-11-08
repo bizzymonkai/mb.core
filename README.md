@@ -2,7 +2,7 @@
 
 MonkeyBusiness network primitive core. The specification.
 
-Absorbs the under-the-hood of [notention9](https://github.com/autonull/notention9) as the semantic engine: MatchEngine, Note model, local-first store, ontology. Vendored at [core/vendor/notention](core/vendor/notention) from commit `b0f49fe`. MB does not call Notention as a service. Files in [docs/](docs/) are retired archives.
+Absorbs the under-the-hood of [notention9](https://github.com/autonull/notention9) as the semantic engine. Declared as `@notention/core` from `github:autonull/notention9`. Imports are `@notention/core/...`. MB does not call Notention as a service. The vendor copy remains until the package install is linked. Files in [docs/](docs/) are retired archives.
 
 ## MB Network | an open business protocol
 

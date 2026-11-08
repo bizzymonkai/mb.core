@@ -9,25 +9,25 @@
  * Imported commit is recorded in core/vendor/IMPORTED.md.
  */
 
-export { OntologyService } from '../vendor/notention/ontology/ontologyService.js';
-export { DEFAULT_ONTOLOGY } from '../vendor/notention/ontology/ontology.default.js';
-export { MatchEngine, MatchingService } from '../vendor/notention/matching/index.js';
+export { OntologyService } from '@notention/core/ontology/ontologyService.js';
+export { DEFAULT_ONTOLOGY } from '@notention/core/ontology/ontology.default.js';
+export { MatchEngine, MatchingService } from '@notention/core/matching/index.js';
 export {
   findNode,
   buildAttributeIndex,
   collectOntologyKeys,
   getCanonicalKey,
-} from '../vendor/notention/ontology/ontologyCore.js';
+} from '@notention/core/ontology/ontologyCore.js';
 
 export {
   getFrictionCounts,
   getFrictionSignals,
   recordFriction,
   generateFrictionDigest,
-} from '../vendor/notention/telemetry/journal.js';
+} from '@notention/core/telemetry/journal.js';
 
-import { OntologyService } from '../vendor/notention/ontology/ontologyService.js';
-import { DEFAULT_ONTOLOGY } from '../vendor/notention/ontology/ontology.default.js';
+import { OntologyService } from '@notention/core/ontology/ontologyService.js';
+import { DEFAULT_ONTOLOGY } from '@notention/core/ontology/ontology.default.js';
 import { composeOntology } from './ontology/index.js';
 import type { OntologyNode } from './ontology/mb.domains.js';
 

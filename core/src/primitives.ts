@@ -6,7 +6,7 @@
  * shape. No call out to a Notention service.
  */
 
-import type { Note, Property, PrivacyLevel, NoteStatus } from '../vendor/notention/types/domain.js';
+import type { Note, Property, PrivacyLevel, NoteStatus } from '@notention/core/types/domain.js';
 import { normalizeWhat3Words, what3WordsTag } from './what3words.js';
 
 export type PrimitiveId =

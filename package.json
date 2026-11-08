@@ -21,6 +21,7 @@
     "kubo": "^0.43.1",
     "memorelay": "^2.0.4",
     "nostr-tools": "^2.26.0",
-    "ws": "^8.22.1"
+    "ws": "^8.22.1",
+    "@notention/core": "github:autonull/notention9"
   }
 }

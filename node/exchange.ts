@@ -12,7 +12,7 @@ import { verifyEvent, type Event } from 'nostr-tools';
 import { Relay, useWebSocketImplementation } from 'nostr-tools/relay';
 import WebSocket from 'ws';
 import type { MbNode } from './index.js';
-import type { Note } from '../core/vendor/notention/types/domain.js';
+import type { Note } from '@notention/core/types/domain.js';
 import {
   createSituation,
   createOffer,

@@ -5,9 +5,9 @@
  * substring matches are different squares.
  */
 
-import type { Note, Property } from '../vendor/notention/types/domain.js';
-import type { MatchEngine } from '../vendor/notention/matching/MatchEngine.js';
-import type { MatchResult, PropertyMatch } from '../vendor/notention/matching/types.js';
+import type { Note, Property } from '@notention/core/types/domain.js';
+import type { MatchEngine } from '@notention/core/matching/MatchEngine.js';
+import type { MatchResult, PropertyMatch } from '@notention/core/matching/types.js';
 
 export const WHAT3WORDS_KEY = 'what3words';
 

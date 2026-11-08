@@ -20,7 +20,7 @@ import { Relay, useWebSocketImplementation } from 'nostr-tools/relay';
 import WebSocket from 'ws';
 import { MbNode } from './index.js';
 import { createSituation, createOffer, createMessage, createAgreement } from '../core/src/primitives.js';
-import type { Note } from '../core/vendor/notention/types/domain.js';
+import type { Note } from '@notention/core/types/domain.js';
 
 function asStringWebSocket(Base: typeof WebSocket) {
   return class StringWebSocket extends Base {
